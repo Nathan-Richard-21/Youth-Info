@@ -7,8 +7,10 @@ import IconButton from '@mui/material/IconButton'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import MenuIcon from '@mui/icons-material/Menu'
+import TranslateIcon from '@mui/icons-material/Translate'
 import { Link, useNavigate } from 'react-router-dom'
-import { Box, useMediaQuery, useTheme } from '@mui/material'
+import { Box, useMediaQuery, useTheme, Tooltip } from '@mui/material'
+import { useLanguage } from '../context/LanguageContext'
 
 const NavBar = () => {
   const navigate = useNavigate()
@@ -16,6 +18,7 @@ const NavBar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [anchorEl, setAnchorEl] = useState(null)
   const token = localStorage.getItem('token')
+  const { content, toggleLanguage, language } = useLanguage()
   
   const logout = () => { 
     localStorage.removeItem('token')
@@ -24,14 +27,14 @@ const NavBar = () => {
   }
 
   const pages = [
-    { label: 'Bursaries', path: '/bursaries' },
-    { label: 'Careers', path: '/careers' },
-    { label: 'Learnerships', path: '/learnerships' },
-    { label: 'Business Funding', path: '/business-funding' },
-    { label: 'Medical Chat', path: '/medical-chat' },
-    { label: 'Success Stories', path: '/success-stories' },
-    { label: 'Events', path: '/events' },
-    { label: 'Forums', path: '/forums' }
+    { label: content.nav.bursaries, path: '/bursaries' },
+    { label: content.nav.careers, path: '/careers' },
+    { label: content.nav.learnerships, path: '/learnerships' },
+    { label: content.nav.businessFunding, path: '/business-funding' },
+    { label: content.nav.medicalChat, path: '/medical-chat' },
+    { label: content.nav.successStories, path: '/success-stories' },
+    { label: content.nav.events, path: '/events' },
+    { label: content.nav.forums, path: '/forums' }
   ]
 
   return (
@@ -44,18 +47,23 @@ const NavBar = () => {
         {isMobile ? (
           <>
             <Box sx={{ flexGrow: 1 }} />
+            <Tooltip title={language === 'en' ? 'Switch to isiXhosa' : 'Tshintshela kuIsiNgesi'}>
+              <IconButton onClick={toggleLanguage} color="primary">
+                <TranslateIcon />
+              </IconButton>
+            </Tooltip>
             <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}><MenuIcon /></IconButton>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
               {pages.map(p => <MenuItem key={p.path} component={Link} to={p.path} onClick={() => setAnchorEl(null)}>{p.label}</MenuItem>)}
               {token ? (
                 <>
-                  <MenuItem component={Link} to="/profile" onClick={() => setAnchorEl(null)}>Profile</MenuItem>
-                  <MenuItem onClick={() => { logout(); setAnchorEl(null); }}>Logout</MenuItem>
+                  <MenuItem component={Link} to="/profile" onClick={() => setAnchorEl(null)}>{content.nav.profile}</MenuItem>
+                  <MenuItem onClick={() => { logout(); setAnchorEl(null); }}>{content.nav.logout}</MenuItem>
                 </>
               ) : (
                 <>
-                  <MenuItem component={Link} to="/login" onClick={() => setAnchorEl(null)}>Login</MenuItem>
-                  <MenuItem component={Link} to="/register" onClick={() => setAnchorEl(null)}>Sign Up</MenuItem>
+                  <MenuItem component={Link} to="/login" onClick={() => setAnchorEl(null)}>{content.nav.login}</MenuItem>
+                  <MenuItem component={Link} to="/register" onClick={() => setAnchorEl(null)}>{content.nav.signup}</MenuItem>
                 </>
               )}
             </Menu>
@@ -65,15 +73,20 @@ const NavBar = () => {
             <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
               {pages.map(p => <Button key={p.path} component={Link} to={p.path} sx={{ color: 'text.primary', textTransform: 'none' }}>{p.label}</Button>)}
             </Box>
+            <Tooltip title={language === 'en' ? 'Switch to isiXhosa' : 'Tshintshela kuIsiNgesi'}>
+              <IconButton onClick={toggleLanguage} color="primary" sx={{ mr: 1 }}>
+                <TranslateIcon />
+              </IconButton>
+            </Tooltip>
             {token ? (
               <>
-                <Button component={Link} to="/profile" variant="outlined" sx={{ mr: 1 }}>Profile</Button>
-                <Button onClick={logout} variant="text">Logout</Button>
+                <Button component={Link} to="/profile" variant="outlined" sx={{ mr: 1 }}>{content.nav.profile}</Button>
+                <Button onClick={logout} variant="text">{content.nav.logout}</Button>
               </>
             ) : (
               <>
-                <Button component={Link} to="/login" variant="outlined" sx={{ mr: 1 }}>Login</Button>
-                <Button component={Link} to="/register" variant="contained">Sign Up</Button>
+                <Button component={Link} to="/login" variant="outlined" sx={{ mr: 1 }}>{content.nav.login}</Button>
+                <Button component={Link} to="/register" variant="contained">{content.nav.signup}</Button>
               </>
             )}
           </>

@@ -9,24 +9,27 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import ForumIcon from '@mui/icons-material/Forum'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import { useLanguage } from '../context/LanguageContext'
 
 const HomePage = () => {
+  const { content } = useLanguage()
+
   const categories = [
-    { title: 'Bursaries & Scholarships', icon: <SchoolIcon sx={{ fontSize: 40 }} />, path: '/bursaries', color: '#6366f1', desc: 'Find funding for your education' },
-    { title: 'Career Opportunities', icon: <WorkIcon sx={{ fontSize: 40 }} />, path: '/careers', color: '#10b981', desc: 'Jobs, internships & more' },
-    { title: 'Learnerships', icon: <TrendingUpIcon sx={{ fontSize: 40 }} />, path: '/learnerships', color: '#f59e0b', desc: 'Learn while you earn' },
-    { title: 'Business Funding', icon: <BusinessCenterIcon sx={{ fontSize: 40 }} />, path: '/business-funding', color: '#ef4444', desc: 'Grants & startup support' },
-    { title: 'Medical Chat', icon: <LocalHospitalIcon sx={{ fontSize: 40 }} />, path: '/medical-chat', color: '#ec4899', desc: 'Health info & support' },
-    { title: 'Success Stories', icon: <EmojiEventsIcon sx={{ fontSize: 40 }} />, path: '/success-stories', color: '#8b5cf6', desc: 'Get inspired by peers' },
-    { title: 'Events Calendar', icon: <CalendarTodayIcon sx={{ fontSize: 40 }} />, path: '/events', color: '#06b6d4', desc: 'Workshops & meetups' },
-    { title: 'Community Forums', icon: <ForumIcon sx={{ fontSize: 40 }} />, path: '/forums', color: '#f97316', desc: 'Connect & discuss' }
+    { title: content.categories.bursariesTitle, icon: <SchoolIcon sx={{ fontSize: 40 }} />, path: '/bursaries', color: '#6366f1', desc: content.categories.bursariesDesc },
+    { title: content.categories.careersTitle, icon: <WorkIcon sx={{ fontSize: 40 }} />, path: '/careers', color: '#10b981', desc: content.categories.careersDesc },
+    { title: content.categories.learnershipsTitle, icon: <TrendingUpIcon sx={{ fontSize: 40 }} />, path: '/learnerships', color: '#f59e0b', desc: content.categories.learnershipsDesc },
+    { title: content.categories.businessTitle, icon: <BusinessCenterIcon sx={{ fontSize: 40 }} />, path: '/business-funding', color: '#ef4444', desc: content.categories.businessDesc },
+    { title: content.categories.medicalTitle, icon: <LocalHospitalIcon sx={{ fontSize: 40 }} />, path: '/medical-chat', color: '#ec4899', desc: content.categories.medicalDesc },
+    { title: content.categories.successTitle, icon: <EmojiEventsIcon sx={{ fontSize: 40 }} />, path: '/success-stories', color: '#8b5cf6', desc: content.categories.successDesc },
+    { title: content.categories.eventsTitle, icon: <CalendarTodayIcon sx={{ fontSize: 40 }} />, path: '/events', color: '#06b6d4', desc: content.categories.eventsDesc },
+    { title: content.categories.forumsTitle, icon: <ForumIcon sx={{ fontSize: 40 }} />, path: '/forums', color: '#f97316', desc: content.categories.forumsDesc }
   ]
 
   const stats = [
-    { label: 'Active Opportunities', value: '1,250+' },
-    { label: 'Registered Users', value: '8,500+' },
-    { label: 'Success Stories', value: '340+' },
-    { label: 'Partner Organizations', value: '75+' }
+    { label: content.home.statsTitle1, value: '1,250+' },
+    { label: content.home.statsTitle2, value: '8,500+' },
+    { label: content.home.statsTitle3, value: '340+' },
+    { label: content.home.statsTitle4, value: '75+' }
   ]
 
   const featuredOpps = [
@@ -43,17 +46,17 @@ const HomePage = () => {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={7}>
               <Typography variant="h2" fontWeight={700} gutterBottom>
-                Unlock Your Future in Eastern Cape
+                {content.home.heroTitle}
               </Typography>
               <Typography variant="h6" sx={{ mb: 4, opacity: 0.95 }}>
-                Discover bursaries, careers, learnerships, business funding, and support tailored for youth. Your journey to success starts here.
+                {content.home.heroSubtitle}
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <Button component={Link} to="/bursaries" variant="contained" size="large" sx={{ bgcolor: 'white', color: 'primary.main', '&:hover': { bgcolor: '#f3f4f6' } }}>
-                  Explore Opportunities
+                  {content.home.exploreBtn}
                 </Button>
                 <Button component={Link} to="/register" variant="outlined" size="large" sx={{ color: 'white', borderColor: 'white', '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' } }}>
-                  Get Started Free
+                  {content.home.getStartedBtn}
                 </Button>
               </Box>
             </Grid>
@@ -78,10 +81,10 @@ const HomePage = () => {
       {/* Categories Grid */}
       <Container maxWidth="lg" sx={{ my: 8 }}>
         <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
-          Explore Opportunities & Resources
+          {content.home.categoriesTitle}
         </Typography>
         <Typography variant="body1" textAlign="center" color="text.secondary" mb={4}>
-          Everything you need to succeed in one place
+          {content.home.categoriesSubtitle}
         </Typography>
         
         <Grid container spacing={3}>
@@ -112,10 +115,10 @@ const HomePage = () => {
       <Box sx={{ bgcolor: '#f8fafc', py: 8 }}>
         <Container maxWidth="lg">
           <Typography variant="h4" fontWeight={700} gutterBottom>
-            Featured Opportunities
+            {content.home.featuredTitle}
           </Typography>
           <Typography variant="body1" color="text.secondary" mb={4}>
-            Don't miss out on these trending opportunities
+            {content.home.featuredSubtitle}
           </Typography>
           
           <Grid container spacing={3}>
@@ -126,12 +129,12 @@ const HomePage = () => {
                     <Chip label={opp.category} size="small" color="primary" sx={{ mb: 2 }} />
                     <Typography variant="h6" fontWeight={600} gutterBottom>{opp.title}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Deadline: {new Date(opp.deadline).toLocaleDateString()}
+                      {content.home.deadline}: {new Date(opp.deadline).toLocaleDateString()}
                     </Typography>
                   </CardContent>
                   <CardActions>
-                    <Button component={Link} to={`/${opp.type === 'business' ? 'business-funding' : opp.type === 'bursary' ? 'bursaries' : 'careers'}`} size="small">Learn More</Button>
-                    <Button size="small" color="primary">Apply Now</Button>
+                    <Button component={Link} to={`/${opp.type === 'business' ? 'business-funding' : opp.type === 'bursary' ? 'bursaries' : 'careers'}`} size="small">{content.home.learnMore}</Button>
+                    <Button size="small" color="primary">{content.home.applyNow}</Button>
                   </CardActions>
                 </Card>
               </Grid>
@@ -143,13 +146,13 @@ const HomePage = () => {
       {/* CTA Section */}
       <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
         <Typography variant="h4" fontWeight={700} gutterBottom>
-          Ready to Start Your Journey?
+          {content.home.ctaTitle}
         </Typography>
         <Typography variant="body1" color="text.secondary" mb={4}>
-          Join thousands of Eastern Cape youth achieving their dreams
+          {content.home.ctaSubtitle}
         </Typography>
         <Button component={Link} to="/register" variant="contained" size="large">
-          Create Free Account
+          {content.home.ctaBtn}
         </Button>
       </Container>
     </Box>

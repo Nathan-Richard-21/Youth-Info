@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
+import { LanguageProvider } from './context/LanguageContext'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
@@ -41,32 +42,34 @@ const theme = createTheme({
 
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <NavBar />
-        <main style={{ flex: 1 }}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/bursaries" element={<Bursaries />} />
-            <Route path="/careers" element={<Careers />} />
-            <Route path="/learnerships" element={<Learnerships />} />
-            <Route path="/business-funding" element={<BusinessFunding />} />
-            <Route path="/medical-chat" element={<MedicalChat />} />
-            <Route path="/success-stories" element={<SuccessStories />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/forums" element={<Forums />} />
-            <Route path="/resume-builder" element={<ResumeBuilder />} />
-            <Route path="/knowledge-base" element={<KnowledgeBase />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <NavBar />
+          <main style={{ flex: 1 }}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/bursaries" element={<Bursaries />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/learnerships" element={<Learnerships />} />
+              <Route path="/business-funding" element={<BusinessFunding />} />
+              <Route path="/medical-chat" element={<MedicalChat />} />
+              <Route path="/success-stories" element={<SuccessStories />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/forums" element={<Forums />} />
+              <Route path="/resume-builder" element={<ResumeBuilder />} />
+              <Route path="/knowledge-base" element={<KnowledgeBase />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </ThemeProvider>
+    </LanguageProvider>
   )
 }
 
