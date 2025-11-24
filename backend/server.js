@@ -13,12 +13,21 @@ const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const oppRoutes = require('./routes/opportunities');
 const chatRoutes = require('./routes/chat');
+const applicationRoutes = require('./routes/applications');
+const reportRoutes = require('./routes/reports');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/opportunities', oppRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/applications', applicationRoutes);
+app.use('/api/reports', reportRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
 
 const PORT = process.env.PORT || 5000;
 const MONGO = process.env.MONGO_URI || 'mongodb://localhost:27017/youthportal';

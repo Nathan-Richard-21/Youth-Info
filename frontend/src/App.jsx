@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { LanguageProvider } from './context/LanguageContext'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
+import ChatbotWidget from './components/ChatbotWidget'
 import HomePage from './pages/HomePage'
 import Bursaries from './pages/Bursaries'
 import Careers from './pages/Careers'
@@ -20,6 +21,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminPostPortal from './pages/AdminPostPortal'
 
 const theme = createTheme({
   palette: {
@@ -64,9 +66,11 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/post" element={<AdminPostPortal />} />
             </Routes>
           </main>
           <Footer />
+          <ChatbotWidget />
         </div>
       </ThemeProvider>
     </LanguageProvider>

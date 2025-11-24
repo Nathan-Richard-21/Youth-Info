@@ -11,8 +11,9 @@ import {
   Search, FilterList, MoreVert, CheckCircle, Cancel, Pending,
   Person, Work, School, Business, Report, Visibility, Delete,
   TrendingUp, Group, Assignment, Flag, Edit, Block, Email,
-  Phone, LocationOn, CalendarToday, Dashboard as DashboardIcon
+  Phone, LocationOn, CalendarToday, Dashboard as DashboardIcon, Add
 } from '@mui/icons-material'
+import { Link } from 'react-router-dom'
 import api from '../api'
 
 const AdminDashboard = () => {
@@ -167,13 +168,24 @@ const AdminDashboard = () => {
     <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="xl">
         {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
-            Admin Dashboard
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage users, moderate content, and oversee system operations
-          </Typography>
+        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Typography variant="h4" fontWeight={700} gutterBottom>
+              Admin Dashboard
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Manage users, moderate content, and oversee system operations
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Add />}
+            component={Link}
+            to="/admin/post"
+          >
+            Post New Opportunity
+          </Button>
         </Box>
 
         {/* Stats Cards */}
