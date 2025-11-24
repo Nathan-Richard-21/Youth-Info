@@ -1,17 +1,68 @@
-import React, { useState } from 'react'
-import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Button, Chip, Paper } from '@mui/material'
+import React, { useState, useEffect } from 'react'
+import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Button, Chip, Paper, CircularProgress, Alert } from '@mui/material'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import ForumIcon from '@mui/icons-material/Forum'
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
+import BookmarkIcon from '@mui/icons-material/Bookmark'
+import api from '../api'
 
 const Learnerships = () => {
-  const learnerships = [
-    { title: 'IT Systems Support Learnership', provider: 'FET College EC', duration: '18 months', level: 'NQF 5', stipend: 'R3,500/month', requirements: 'Matric with IT', forum: true },
-    { title: 'Electrical Engineering Learnership', provider: 'Eskom Academy', duration: '24 months', level: 'NQF 4', stipend: 'R6,000/month', requirements: 'N3 Electrical or Matric Maths & Science', forum: true },
-    { title: 'Business Administration NQF 4', provider: 'Services SETA', duration: '12 months', level: 'NQF 4', stipend: 'R3,000/month', requirements: 'Matric', forum: false },
-    { title: 'Hospitality Services Learnership', provider: 'CATHSSETA', duration: '12 months', level: 'NQF 3', stipend: 'R2,800/month', requirements: 'Grade 10+', forum: false },
-    { title: 'Project Management Learnership', provider: 'MICT SETA', duration: '18 months', level: 'NQF 5', stipend: 'R5,000/month', requirements: 'Diploma/Degree', forum: true },
-    { title: 'Retail Management Learnership', provider: 'W&R SETA', duration: '12 months', level: 'NQF 4', stipend: 'R4,000/month', requirements: 'Matric, retail experience', forum: true }
-  ]
+  const [learnerships, setLearnerships] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [saved, setSaved] = useState(new Set())
+  const token = localStorage.getItem('token')
+
+  useEffect(() => {
+    fetchLearnerships()
+    if (token) fetchSaved()
+  }, [])
+
+  const fetchLearnerships = async () => {
+    try {
+      setLoading(true)
+      const response = await api.get('/opportunities?category=learnership&limit=50')
+      setLearnerships(response.data.opportunities || [])
+    } catch (err) {
+      setError('Failed to load learnerships')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchSaved = async () => {
+    try {
+      const response = await api.get('/users/me/saved')
+      setSaved(new Set(response.data.map(o => o._id)))
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleSave = async (id) => {
+    if (!token) return alert('Please login')
+    try {
+      if (saved.has(id)) {
+        await api.delete(`/opportunities/${id}/save`)
+        setSaved(prev => { const n = new Set(prev); n.delete(id); return n })
+      } else {
+        await api.post(`/opportunities/${id}/save`)
+        setSaved(prev => new Set(prev).add(id))
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed')
+    }
+  }
+
+  const handleApply = async (id) => {
+    if (!token) return alert('Please login')
+    try {
+      await api.post(`/opportunities/${id}/apply`, { coverLetter: 'Interested', answers: [] })
+      alert('Application submitted!')
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed')
+    }
+  }
 
   return (
     <Box>
@@ -35,40 +86,69 @@ const Learnerships = () => {
           </Typography>
         </Paper>
 
-        <Typography variant="h5" fontWeight={600} mb={3}>{learnerships.length} Learnerships Available</Typography>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : (
+          <>
+            <Typography variant="h5" fontWeight={600} mb={3}>{learnerships.length} Learnerships Available</Typography>
 
-        <Grid container spacing={3}>
-          {learnerships.map((learn, i) => (
-            <Grid item xs={12} md={6} key={i}>
-              <Card sx={{ height: '100%', '&:hover': { boxShadow: 6 } }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Chip label={learn.level} size="small" color="warning" />
-                    <Chip label={learn.duration} size="small" variant="outlined" />
-                  </Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>{learn.title}</Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Provider:</strong> {learn.provider}
-                  </Typography>
-                  <Typography variant="body1" color="success.main" fontWeight={600} gutterBottom>
-                    Stipend: {learn.stipend}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Requirements:</strong> {learn.requirements}
-                  </Typography>
-                  {learn.forum && (
-                    <Chip icon={<ForumIcon />} label="Forum Available" size="small" color="secondary" variant="outlined" sx={{ mt: 1 }} />
-                  )}
-                </CardContent>
-                <CardActions>
-                  <Button variant="contained" color="warning">Apply Now</Button>
-                  {learn.forum && <Button startIcon={<ForumIcon />}>Discuss</Button>}
-                  <Button>Save</Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+            {learnerships.length === 0 ? (
+              <Alert severity="info">No learnerships available at the moment.</Alert>
+            ) : (
+              <Grid container spacing={3}>
+                {learnerships.map((learn) => (
+                  <Grid item xs={12} md={6} key={learn._id}>
+                    <Card sx={{ height: '100%', '&:hover': { boxShadow: 6 } }}>
+                      {learn.imageUrl && (
+                        <Box component="img" src={learn.imageUrl} alt={learn.title}
+                          sx={{ height: 180, width: '100%', objectFit: 'cover' }}
+                          onError={(e) => e.target.style.display = 'none'} />
+                      )}
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                          {learn.subcategory && <Chip label={learn.subcategory} size="small" color="warning" />}
+                          {learn.featured && <Chip label="Featured" size="small" color="secondary" />}
+                          {learn.urgent && <Chip label="Urgent" size="small" color="error" />}
+                        </Box>
+                        <Typography variant="h6" fontWeight={600} gutterBottom>{learn.title}</Typography>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          <strong>Provider:</strong> {learn.organization}
+                        </Typography>
+                        {learn.location && (
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <strong>Location:</strong> {learn.location}
+                          </Typography>
+                        )}
+                        <Typography variant="body2" color="text.secondary" sx={{ 
+                          overflow: 'hidden', textOverflow: 'ellipsis', 
+                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' 
+                        }}>
+                          {learn.description}
+                        </Typography>
+                        {learn.views > 0 && (
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                            {learn.views} views • {learn.applications || 0} applications
+                          </Typography>
+                        )}
+                      </CardContent>
+                      <CardActions>
+                        <Button variant="contained" color="warning" onClick={() => handleApply(learn._id)}>Apply Now</Button>
+                        <Button onClick={() => handleSave(learn._id)}
+                          startIcon={saved.has(learn._id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}>
+                          {saved.has(learn._id) ? 'Saved' : 'Save'}
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </>
+        )}
       </Container>
 
       <Box sx={{ bgcolor: '#fef3c7', py: 6 }}>

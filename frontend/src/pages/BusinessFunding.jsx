@@ -1,23 +1,69 @@
-import React, { useState } from 'react'
-import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Button, Chip, Paper, Tabs, Tab } from '@mui/material'
+import React, { useState, useEffect } from 'react'
+import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Button, Chip, Paper, Tabs, Tab, CircularProgress, Alert } from '@mui/material'
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
 import ForumIcon from '@mui/icons-material/Forum'
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
+import BookmarkIcon from '@mui/icons-material/Bookmark'
+import api from '../api'
 
 const BusinessFunding = () => {
   const [tabValue, setTabValue] = useState(0)
+  const [funding, setFunding] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [saved, setSaved] = useState(new Set())
+  const token = localStorage.getItem('token')
 
-  const grants = [
-    { title: 'NYDA Grant (R10k - R100k)', provider: 'National Youth Development Agency', amount: 'R10,000 - R100,000', type: 'Grant', requirements: '18-35 years, business plan, SA citizen', forum: true },
-    { title: 'SEDA Small Business Grant', provider: 'SEDA', amount: 'Up to R50,000', type: 'Grant', requirements: 'Registered business, <1 year old', forum: true },
-    { title: 'Eastern Cape Development Corporation Funding', provider: 'ECDC', amount: 'R50,000 - R5M', type: 'Loan', requirements: 'Business in EC, viable business plan', forum: false },
-    { title: 'National Empowerment Fund', provider: 'NEF', amount: 'R250k - R75M', type: 'Loan', requirements: '51% Black owned, business plan', forum: true }
-  ]
+  useEffect(() => {
+    fetchFunding()
+    if (token) fetchSaved()
+  }, [])
 
-  const competitions = [
-    { title: 'SAB Foundation Social Innovation Awards', prize: 'R450,000', deadline: '2025-12-15', category: 'Social Enterprise' },
-    { title: 'Eastern Cape Youth Entrepreneur Competition', prize: 'R100,000', deadline: '2025-11-30', category: 'All Sectors' },
-    { title: 'Standard Bank Top Women Competition', prize: 'R350,000 + mentorship', deadline: '2026-01-20', category: 'Women Entrepreneurs' }
-  ]
+  const fetchFunding = async () => {
+    try {
+      setLoading(true)
+      const response = await api.get('/opportunities?category=business&limit=50')
+      setFunding(response.data.opportunities || [])
+    } catch (err) {
+      setError('Failed to load business funding opportunities')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchSaved = async () => {
+    try {
+      const response = await api.get('/users/me/saved')
+      setSaved(new Set(response.data.map(o => o._id)))
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleSave = async (id) => {
+    if (!token) return alert('Please login')
+    try {
+      if (saved.has(id)) {
+        await api.delete(`/opportunities/${id}/save`)
+        setSaved(prev => { const n = new Set(prev); n.delete(id); return n })
+      } else {
+        await api.post(`/opportunities/${id}/save`)
+        setSaved(prev => new Set(prev).add(id))
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed')
+    }
+  }
+
+  const handleApply = async (id) => {
+    if (!token) return alert('Please login')
+    try {
+      await api.post(`/opportunities/${id}/apply`, { coverLetter: 'Interested in funding', answers: [] })
+      alert('Application submitted!')
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed')
+    }
+  }
 
   return (
     <Box>
@@ -43,65 +89,71 @@ const BusinessFunding = () => {
       </Container>
 
       <Container maxWidth="lg" sx={{ my: 6 }}>
-        {tabValue === 0 && (
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : (
           <>
-            <Typography variant="h5" fontWeight={600} mb={3}>{grants.length} Funding Opportunities</Typography>
-            <Grid container spacing={3}>
-              {grants.map((g, i) => (
-                <Grid item xs={12} md={6} key={i}>
-                  <Card sx={{ height: '100%', '&:hover': { boxShadow: 6 } }}>
-                    <CardContent>
-                      <Chip label={g.type} size="small" color={g.type === 'Grant' ? 'success' : 'primary'} sx={{ mb: 2 }} />
-                      <Typography variant="h6" fontWeight={600} gutterBottom>{g.title}</Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        <strong>Provider:</strong> {g.provider}
-                      </Typography>
-                      <Typography variant="h5" color="success.main" fontWeight={700} gutterBottom>
-                        {g.amount}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>Requirements:</strong> {g.requirements}
-                      </Typography>
-                      {g.forum && (
-                        <Chip icon={<ForumIcon />} label="Discuss in Forum" size="small" color="secondary" variant="outlined" sx={{ mt: 2 }} />
+            <Typography variant="h5" fontWeight={600} mb={3}>{funding.length} Funding Opportunities</Typography>
+            {funding.length === 0 ? (
+              <Alert severity="info">No business funding opportunities available.</Alert>
+            ) : (
+              <Grid container spacing={3}>
+                {funding.map((g) => (
+                  <Grid item xs={12} md={6} key={g._id}>
+                    <Card sx={{ height: '100%', '&:hover': { boxShadow: 6 } }}>
+                      {g.imageUrl && (
+                        <Box component="img" src={g.imageUrl} alt={g.title}
+                          sx={{ height: 180, width: '100%', objectFit: 'cover' }}
+                          onError={(e) => e.target.style.display = 'none'} />
                       )}
-                    </CardContent>
-                    <CardActions>
-                      <Button variant="contained" color="error">Apply</Button>
-                      {g.forum && <Button startIcon={<ForumIcon />}>Forum</Button>}
-                      <Button>Save</Button>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </>
-        )}
-
-        {tabValue === 1 && (
-          <>
-            <Typography variant="h5" fontWeight={600} mb={3}>{competitions.length} Active Competitions</Typography>
-            <Grid container spacing={3}>
-              {competitions.map((c, i) => (
-                <Grid item xs={12} md={4} key={i}>
-                  <Card sx={{ height: '100%' }}>
-                    <CardContent>
-                      <Chip label={c.category} size="small" color="warning" sx={{ mb: 2 }} />
-                      <Typography variant="h6" fontWeight={600} gutterBottom>{c.title}</Typography>
-                      <Typography variant="h4" color="error.main" fontWeight={700} gutterBottom>
-                        {c.prize}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>Deadline:</strong> {new Date(c.deadline).toLocaleDateString()}
-                      </Typography>
-                    </CardContent>
-                    <CardActions>
-                      <Button variant="contained" color="error" fullWidth>Enter Competition</Button>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                          {g.fundingType && <Chip label={g.fundingType} size="small" color="success" />}
+                          {g.subcategory && <Chip label={g.subcategory} size="small" color="primary" />}
+                          {g.featured && <Chip label="Featured" size="small" color="secondary" />}
+                        </Box>
+                        <Typography variant="h6" fontWeight={600} gutterBottom>{g.title}</Typography>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          <strong>Provider:</strong> {g.organization}
+                        </Typography>
+                        {g.amount && (
+                          <Typography variant="h5" color="success.main" fontWeight={700} gutterBottom>
+                            {g.amount}
+                          </Typography>
+                        )}
+                        {g.location && (
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <strong>Location:</strong> {g.location}
+                          </Typography>
+                        )}
+                        <Typography variant="body2" color="text.secondary" sx={{
+                          overflow: 'hidden', textOverflow: 'ellipsis',
+                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'
+                        }}>
+                          {g.description}
+                        </Typography>
+                        {g.views > 0 && (
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                            {g.views} views • {g.applications || 0} applications
+                          </Typography>
+                        )}
+                      </CardContent>
+                      <CardActions>
+                        <Button variant="contained" color="error" onClick={() => handleApply(g._id)}>Apply</Button>
+                        <Button onClick={() => handleSave(g._id)}
+                          startIcon={saved.has(g._id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}>
+                          {saved.has(g._id) ? 'Saved' : 'Save'}
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
           </>
         )}
       </Container>

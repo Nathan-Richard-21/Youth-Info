@@ -1,23 +1,99 @@
-import React, { useState } from 'react'
-import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Button, TextField, MenuItem, Chip, Paper } from '@mui/material'
+import React, { useState, useEffect } from 'react'
+import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Button, TextField, MenuItem, Chip, Paper, CircularProgress, Alert } from '@mui/material'
 import SchoolIcon from '@mui/icons-material/School'
 import SearchIcon from '@mui/icons-material/Search'
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
+import BookmarkIcon from '@mui/icons-material/Bookmark'
+import api from '../api'
 
 const Bursaries = () => {
   const [search, setSearch] = useState('')
   const [level, setLevel] = useState('')
   const [field, setField] = useState('')
+  const [bursaries, setBursaries] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [savedBursaries, setSavedBursaries] = useState(new Set())
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const token = localStorage.getItem('token')
 
-  const bursaries = [
-    { title: 'National Student Financial Aid Scheme (NSFAS)', provider: 'Government', amount: 'Full tuition + allowances', deadline: '2025-12-31', level: 'Tertiary', field: 'All Fields', requirements: 'SA citizen, household income < R350k' },
-    { title: 'Thuthuka Bursary Fund', provider: 'SAICA', amount: 'Full tuition', deadline: '2025-11-30', level: 'University', field: 'Accounting', requirements: 'Academic merit, financial need' },
-    { title: 'Eskom Tertiary Education Support Programme', provider: 'Eskom', amount: 'R50,000 - R90,000/year', deadline: '2025-12-15', level: 'University', field: 'Engineering, Science', requirements: 'Maths 60%+, English 60%+' },
-    { title: 'Funza Lushaka Bursary Programme', provider: 'Dept of Education', amount: 'Full tuition + stipend', deadline: '2026-01-15', level: 'University', field: 'Teaching', requirements: 'Teaching degree, work back 1 year per year' },
-    { title: 'Standard Bank Learning Programme', provider: 'Standard Bank', amount: 'Full tuition', deadline: '2025-12-01', level: 'University', field: 'Finance, IT, Business', requirements: 'Academic merit, leadership' },
-    { title: 'Sasol Bursary Programme', provider: 'Sasol', amount: 'R60,000 - R100,000/year', deadline: '2025-11-25', level: 'University', field: 'Engineering, Science', requirements: 'Maths 65%+, Science 65%+' },
-    { title: 'Allan Gray Orbis Foundation Scholarship', provider: 'Allan Gray', amount: 'Full fees + allowance', deadline: '2025-10-31', level: 'Grade 12, University', field: 'All Fields', requirements: 'Entrepreneurial spirit, leadership' },
-    { title: 'Transnet Bursary Scheme', provider: 'Transnet', amount: 'R70,000 - R120,000/year', deadline: '2025-12-10', level: 'University', field: 'Engineering, Logistics', requirements: 'Maths 60%+, citizen' }
-  ]
+  useEffect(() => {
+    fetchBursaries()
+    if (token) fetchSavedBursaries()
+  }, [])
+
+  const fetchBursaries = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      const params = new URLSearchParams({
+        category: 'bursary',
+        ...(search && { search }),
+        ...(level && { subcategory: level }),
+        page: 1,
+        limit: 50
+      })
+      const response = await api.get(`/opportunities?${params}`)
+      setBursaries(response.data.opportunities || [])
+    } catch (err) {
+      console.error('Error fetching bursaries:', err)
+      setError('Failed to load bursaries. Please try again later.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchSavedBursaries = async () => {
+    try {
+      const response = await api.get('/users/me/saved')
+      const savedIds = new Set(response.data.map(opp => opp._id))
+      setSavedBursaries(savedIds)
+    } catch (err) {
+      console.error('Error fetching saved bursaries:', err)
+    }
+  }
+
+  const handleFilter = () => {
+    fetchBursaries()
+  }
+
+  const handleSave = async (bursaryId) => {
+    if (!token) {
+      alert('Please login to save bursaries')
+      return
+    }
+    try {
+      if (savedBursaries.has(bursaryId)) {
+        await api.delete(`/opportunities/${bursaryId}/save`)
+        setSavedBursaries(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(bursaryId)
+          return newSet
+        })
+      } else {
+        await api.post(`/opportunities/${bursaryId}/save`)
+        setSavedBursaries(prev => new Set(prev).add(bursaryId))
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to save bursary')
+    }
+  }
+
+  const handleApply = async (bursaryId) => {
+    if (!token) {
+      alert('Please login to apply')
+      return
+    }
+    try {
+      await api.post(`/opportunities/${bursaryId}/apply`, {
+        coverLetter: 'I am interested in this opportunity',
+        answers: []
+      })
+      alert('Application submitted successfully!')
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to apply')
+    }
+  }
 
   return (
     <Box>
@@ -66,7 +142,7 @@ const Bursaries = () => {
               </TextField>
             </Grid>
             <Grid item xs={12} md={1}>
-              <Button variant="contained" fullWidth>Filter</Button>
+              <Button variant="contained" fullWidth onClick={handleFilter}>Filter</Button>
             </Grid>
           </Grid>
         </Paper>
@@ -74,42 +150,87 @@ const Bursaries = () => {
 
       {/* Bursary Cards */}
       <Container maxWidth="lg" sx={{ my: 6 }}>
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h5" fontWeight={600}>{bursaries.length} Bursaries Available</Typography>
-          <Button variant="outlined">Sort By: Deadline</Button>
-        </Box>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
+        ) : (
+          <>
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h5" fontWeight={600}>{bursaries.length} Bursaries Available</Typography>
+            </Box>
 
-        <Grid container spacing={3}>
-          {bursaries.map((b, i) => (
-            <Grid item xs={12} md={6} key={i}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', '&:hover': { boxShadow: 6 } }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Chip label={b.level} size="small" color="primary" />
-                    <Chip label={`Deadline: ${new Date(b.deadline).toLocaleDateString()}`} size="small" variant="outlined" />
-                  </Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>{b.title}</Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Provider:</strong> {b.provider}
-                  </Typography>
-                  <Typography variant="body2" color="success.main" fontWeight={600} gutterBottom>
-                    {b.amount}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Field:</strong> {b.field}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Requirements:</strong> {b.requirements}
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ p: 2, pt: 0 }}>
-                  <Button variant="contained" fullWidth>Apply Now</Button>
-                  <Button variant="outlined">Save</Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+            {bursaries.length === 0 ? (
+              <Alert severity="info">No bursaries found. Try adjusting your filters.</Alert>
+            ) : (
+              <Grid container spacing={3}>
+                {bursaries.map((b) => (
+                  <Grid item xs={12} md={6} key={b._id}>
+                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', '&:hover': { boxShadow: 6 } }}>
+                      {b.imageUrl && (
+                        <Box
+                          component="img"
+                          src={b.imageUrl}
+                          alt={b.title}
+                          sx={{ height: 180, objectFit: 'cover' }}
+                          onError={(e) => e.target.style.display = 'none'}
+                        />
+                      )}
+                      <CardContent sx={{ flexGrow: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                          {b.subcategory && <Chip label={b.subcategory} size="small" color="primary" />}
+                          {b.deadline && <Chip label={`Deadline: ${new Date(b.deadline).toLocaleDateString()}`} size="small" variant="outlined" />}
+                          {b.featured && <Chip label="Featured" size="small" color="secondary" />}
+                          {b.urgent && <Chip label="Urgent" size="small" color="error" />}
+                        </Box>
+                        <Typography variant="h6" fontWeight={600} gutterBottom>{b.title}</Typography>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          <strong>Provider:</strong> {b.organization}
+                        </Typography>
+                        {b.amount && (
+                          <Typography variant="body2" color="success.main" fontWeight={600} gutterBottom>
+                            {b.amount} {b.fundingType && `(${b.fundingType})`}
+                          </Typography>
+                        )}
+                        {b.location && (
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <strong>Location:</strong> {b.location}
+                          </Typography>
+                        )}
+                        <Typography variant="body2" color="text.secondary" sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical'
+                        }}>
+                          {b.description}
+                        </Typography>
+                        {b.views > 0 && (
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                            {b.views} views • {b.applications || 0} applications
+                          </Typography>
+                        )}
+                      </CardContent>
+                      <CardActions sx={{ p: 2, pt: 0 }}>
+                        <Button variant="contained" fullWidth onClick={() => handleApply(b._id)}>Apply Now</Button>
+                        <Button 
+                          variant="outlined" 
+                          onClick={() => handleSave(b._id)}
+                          startIcon={savedBursaries.has(b._id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                        >
+                          {savedBursaries.has(b._id) ? 'Saved' : 'Save'}
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </>
+        )}
       </Container>
 
       {/* Info Box */}

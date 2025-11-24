@@ -20,6 +20,7 @@ const chatRoutes = require('./routes/chat');
 const applicationRoutes = require('./routes/applications');
 const reportRoutes = require('./routes/reports');
 const uploadRoutes = require('./routes/upload');
+const forumRoutes = require('./routes/forum');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -29,6 +30,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/forum', forumRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

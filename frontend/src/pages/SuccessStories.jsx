@@ -1,58 +1,28 @@
-import React from 'react'
-import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Avatar, Chip, Button } from '@mui/material'
+import React, { useState, useEffect } from 'react'
+import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Avatar, Chip, Button, CircularProgress, Alert } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
+import api from '../api'
 
 const SuccessStories = () => {
-  const stories = [
-    { 
-      name: 'Thabo Mthembu', 
-      title: 'From Bursary to Software Engineer', 
-      image: 'https://via.placeholder.com/400x250?text=Success+Story',
-      story: 'Received NSFAS bursary to study Computer Science at Nelson Mandela University. Now working as a software developer at Amazon Web Services in Cape Town.',
-      tags: ['Bursary', 'IT Career'],
-      location: 'Port Elizabeth'
-    },
-    { 
-      name: 'Nomsa Zwane', 
-      title: 'Young Entrepreneur Success with NYDA Grant', 
-      image: 'https://via.placeholder.com/400x250?text=Success+Story',
-      story: 'Started a catering business with R50k NYDA grant. Now employs 8 people and caters for corporate events across Eastern Cape.',
-      tags: ['Business', 'NYDA Grant'],
-      location: 'East London'
-    },
-    { 
-      name: 'Sipho Ndlovu', 
-      title: 'Learnership to Permanent Job', 
-      image: 'https://via.placeholder.com/400x250?text=Success+Story',
-      story: 'Completed Eskom Engineering Learnership and was offered a permanent position. Working towards becoming a certified electrician.',
-      tags: ['Learnership', 'Engineering'],
-      location: 'Mthatha'
-    },
-    { 
-      name: 'Zanele Khumalo', 
-      title: 'Teaching the Next Generation', 
-      image: 'https://via.placeholder.com/400x250?text=Success+Story',
-      story: 'Funded by Funza Lushaka bursary to become a teacher. Now inspiring Grade 10 learners at her former high school in Mdantsane.',
-      tags: ['Bursary', 'Teaching'],
-      location: 'Mdantsane'
-    },
-    { 
-      name: 'Luthando Gqomo', 
-      title: 'Overcoming Challenges Through Mentorship', 
-      image: 'https://via.placeholder.com/400x250?text=Success+Story',
-      story: 'Connected with a mentor through YouthPortal EC. Received guidance on CV writing and interview skills, landed internship at Standard Bank.',
-      tags: ['Mentorship', 'Career'],
-      location: 'Grahamstown'
-    },
-    { 
-      name: 'Akhona Mahlangu', 
-      title: 'Fashion Designer Wins Competition', 
-      image: 'https://via.placeholder.com/400x250?text=Success+Story',
-      story: 'Won SAB Foundation Social Innovation Award for sustainable fashion startup. R450k prize money helped scale the business across SA.',
-      tags: ['Competition', 'Business'],
-      location: 'East London'
+  const [stories, setStories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchStories()
+  }, [])
+
+  const fetchStories = async () => {
+    try {
+      setLoading(true)
+      const response = await api.get('/opportunities?category=success-story&limit=50')
+      setStories(response.data.opportunities || [])
+    } catch (err) {
+      setError('Failed to load success stories')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
   return (
     <Box>
@@ -69,37 +39,57 @@ const SuccessStories = () => {
       </Box>
 
       <Container maxWidth="lg" sx={{ my: 6 }}>
-        <Typography variant="h5" fontWeight={600} mb={4}>Real stories from real youth in Eastern Cape</Typography>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : (
+          <>
+            <Typography variant="h5" fontWeight={600} mb={4}>Real stories from real youth in Eastern Cape</Typography>
 
-        <Grid container spacing={4}>
-          {stories.map((story, i) => (
-            <Grid item xs={12} md={6} key={i}>
-              <Card sx={{ height: '100%', '&:hover': { boxShadow: 8 } }}>
-                <CardMedia component="img" height="200" image={story.image} alt={story.name} />
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar sx={{ bgcolor: '#8b5cf6', mr: 2 }}>{story.name[0]}</Avatar>
-                    <Box>
-                      <Typography variant="h6" fontWeight={600}>{story.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">{story.location}</Typography>
-                    </Box>
-                  </Box>
-                  <Typography variant="h6" fontWeight={600} color="primary" gutterBottom>
-                    {story.title}
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    {story.story}
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {story.tags.map((tag, j) => (
-                      <Chip key={j} label={tag} size="small" color="secondary" />
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+            {stories.length === 0 ? (
+              <Alert severity="info">No success stories available yet.</Alert>
+            ) : (
+              <Grid container spacing={4}>
+                {stories.map((story) => (
+                  <Grid item xs={12} md={6} key={story._id}>
+                    <Card sx={{ height: '100%', '&:hover': { boxShadow: 8 } }}>
+                      {story.imageUrl && (
+                        <CardMedia component="img" height="200" image={story.imageUrl} alt={story.title}
+                          onError={(e) => e.target.style.display = 'none'} />
+                      )}
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1, flexWrap: 'wrap' }}>
+                          {story.subcategory && <Chip label={story.subcategory} size="small" color="secondary" />}
+                          {story.location && <Chip label={story.location} size="small" variant="outlined" />}
+                          {story.featured && <Chip label="Featured" size="small" color="primary" />}
+                        </Box>
+                        <Typography variant="h6" fontWeight={600} gutterBottom>
+                          {story.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" paragraph>
+                          {story.description}
+                        </Typography>
+                        {story.organization && (
+                          <Typography variant="caption" color="text.secondary">
+                            {story.organization}
+                          </Typography>
+                        )}
+                        {story.views > 0 && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                            {story.views} views
+                          </Typography>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </>
+        )}
       </Container>
 
       <Box sx={{ bgcolor: '#f5f3ff', py: 6 }}>

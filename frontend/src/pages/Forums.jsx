@@ -1,24 +1,93 @@
-import React from 'react'
-import { Box, Container, Typography, Grid, Card, CardContent, Button, Avatar, Chip, Paper } from '@mui/material'
+import React, { useState, useEffect } from 'react'
+import { Box, Container, Typography, Grid, Card, CardContent, Button, Avatar, Chip, Paper, CircularProgress, Alert, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel } from '@mui/material'
 import ForumIcon from '@mui/icons-material/Forum'
 import CommentIcon from '@mui/icons-material/Comment'
 import PersonIcon from '@mui/icons-material/Person'
+import ThumbUpIcon from '@mui/icons-material/ThumbUp'
+import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import AddIcon from '@mui/icons-material/Add'
+import api from '../api'
 
 const Forums = () => {
-  const forums = [
-    { title: 'Bursary Application Help', category: 'Bursaries', posts: 342, members: 1250, lastActive: '2 hours ago', description: 'Get help with NSFAS and other bursary applications' },
-    { title: 'Job Hunting Tips & Experiences', category: 'Careers', posts: 587, members: 2100, lastActive: '30 minutes ago', description: 'Share job opportunities, interview experiences, CV tips' },
-    { title: 'Learnership Discussions', category: 'Learnerships', posts: 215, members: 680, lastActive: '1 hour ago', description: 'Connect with current and past learners' },
-    { title: 'Entrepreneur Corner', category: 'Business', posts: 428, members: 950, lastActive: '3 hours ago', description: 'Business ideas, funding experiences, mentorship' },
-    { title: 'University Life & Study Tips', category: 'Education', posts: 763, members: 3200, lastActive: '15 minutes ago', description: 'Campus life, study hacks, exam prep' },
-    { title: 'Mental Health Support Group', category: 'Wellness', posts: 521, members: 1450, lastActive: '1 hour ago', description: 'Safe space for mental health discussions' }
-  ]
+  const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [newPost, setNewPost] = useState({ title: '', content: '', category: 'general', tags: '' })
+  const [submitting, setSubmitting] = useState(false)
 
-  const recentTopics = [
-    { title: 'Has anyone received NSFAS confirmation yet?', forum: 'Bursaries', replies: 23, views: 145, author: 'Thabo M.', time: '2 hours ago' },
-    { title: 'Passed Standard Bank interview - AMA!', forum: 'Careers', replies: 45, views: 320, author: 'Nomsa Z.', time: '4 hours ago' },
-    { title: 'NYDA grant application tips?', forum: 'Business', replies: 18, views: 92, author: 'Sipho K.', time: '6 hours ago' }
-  ]
+  useEffect(() => {
+    fetchPosts()
+  }, [])
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true)
+      const response = await api.get('/forum/posts?limit=20&sort=-createdAt')
+      setPosts(response.data.posts)
+      setError('')
+    } catch (err) {
+      console.error('Error fetching forum posts:', err)
+      setError('Failed to load forum posts. Please try again later.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreatePost = async () => {
+    if (!newPost.title.trim() || !newPost.content.trim()) {
+      alert('Please fill in title and content')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      const tagsArray = newPost.tags.split(',').map(t => t.trim()).filter(t => t)
+      await api.post('/forum/posts', {
+        title: newPost.title,
+        content: newPost.content,
+        category: newPost.category,
+        tags: tagsArray
+      })
+      setCreateDialogOpen(false)
+      setNewPost({ title: '', content: '', category: 'general', tags: '' })
+      fetchPosts()
+      alert('Post created successfully!')
+    } catch (err) {
+      if (err.response?.status === 401) {
+        alert('Please log in to create a post.')
+      } else {
+        alert('Failed to create post. Please try again.')
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleLike = async (postId) => {
+    try {
+      await api.post(`/forum/posts/${postId}/like`)
+      fetchPosts()
+    } catch (err) {
+      if (err.response?.status === 401) {
+        alert('Please log in to like posts.')
+      }
+    }
+  }
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      bursaries: 'primary',
+      careers: 'success',
+      learnerships: 'info',
+      business: 'warning',
+      'success-stories': 'secondary',
+      general: 'default',
+      advice: 'error'
+    }
+    return colors[category] || 'default'
+  }
 
   return (
     <Box>
@@ -35,79 +104,133 @@ const Forums = () => {
       </Box>
 
       <Container maxWidth="lg" sx={{ my: 6 }}>
-        {/* Forum Categories */}
-        <Typography variant="h5" fontWeight={600} mb={3}>Browse Forums</Typography>
-        <Grid container spacing={3} mb={6}>
-          {forums.map((forum, i) => (
-            <Grid item xs={12} md={6} key={i}>
-              <Card sx={{ height: '100%', '&:hover': { boxShadow: 6 } }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
-                    <Box>
-                      <Chip label={forum.category} size="small" color="warning" sx={{ mb: 1 }} />
-                      <Typography variant="h6" fontWeight={600}>{forum.title}</Typography>
-                    </Box>
-                    <Avatar sx={{ bgcolor: '#f97316' }}>
-                      <ForumIcon />
-                    </Avatar>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    {forum.description}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>{forum.posts}</strong> Posts
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>{forum.members}</strong> Members
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary">
-                    Last active: {forum.lastActive}
-                  </Typography>
-                </CardContent>
-                <Box sx={{ px: 2, pb: 2 }}>
-                  <Button variant="contained" fullWidth color="warning">View Forum</Button>
-                </Box>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5" fontWeight={600}>Recent Discussions</Typography>
+          <Button 
+            variant="contained" 
+            color="warning" 
+            startIcon={<AddIcon />}
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            New Post
+          </Button>
+        </Box>
 
-        {/* Recent Topics */}
-        <Typography variant="h5" fontWeight={600} mb={3}>Recent Discussions</Typography>
-        <Paper>
-          {recentTopics.map((topic, i) => (
-            <Box key={i} sx={{ p: 3, borderBottom: i < recentTopics.length - 1 ? '1px solid #e5e7eb' : 'none' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {topic.title}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <Chip label={topic.forum} size="small" />
-                    <Typography variant="body2" color="text.secondary">
-                      by {topic.author}
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : posts.length === 0 ? (
+          <Alert severity="info">No posts yet. Be the first to start a discussion!</Alert>
+        ) : (
+          <Paper>
+            {posts.map((post, i) => (
+              <Box key={post._id} sx={{ p: 3, borderBottom: i < posts.length - 1 ? '1px solid #e5e7eb' : 'none', '&:hover': { bgcolor: '#fafafa' } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 2 }}>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+                      {post.isPinned && <Chip label="📌 Pinned" size="small" color="warning" />}
+                      <Chip label={post.category} size="small" color={getCategoryColor(post.category)} />
+                      {post.tags && post.tags.map((tag, j) => (
+                        <Chip key={j} label={tag} size="small" variant="outlined" />
+                      ))}
+                    </Box>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ cursor: 'pointer' }}>
+                      {post.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {topic.time}
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      {post.content.length > 150 ? post.content.substring(0, 150) + '...' : post.content}
                     </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        by {post.author?.username || 'Anonymous'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {new Date(post.createdAt).toLocaleDateString('en-ZA', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-                <Box sx={{ textAlign: 'right', minWidth: 100 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
-                    <CommentIcon fontSize="small" color="action" />
-                    <Typography variant="body2" fontWeight={600}>{topic.replies}</Typography>
+                  <Box sx={{ textAlign: 'right', minWidth: 120 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                        <CommentIcon fontSize="small" color="action" />
+                        <Typography variant="body2" fontWeight={600}>{post.commentCount || 0}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                        <VisibilityIcon fontSize="small" color="action" />
+                        <Typography variant="body2">{post.views || 0}</Typography>
+                      </Box>
+                      <Button
+                        size="small"
+                        startIcon={<ThumbUpOutlinedIcon />}
+                        onClick={() => handleLike(post._id)}
+                      >
+                        {post.likes?.length || 0}
+                      </Button>
+                    </Box>
                   </Box>
-                  <Typography variant="caption" color="text.secondary">
-                    {topic.views} views
-                  </Typography>
                 </Box>
               </Box>
-            </Box>
-          ))}
-        </Paper>
+            ))}
+          </Paper>
+        )}
       </Container>
+
+      {/* Create Post Dialog */}
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Create New Post</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              label="Title"
+              fullWidth
+              value={newPost.title}
+              onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+              placeholder="What would you like to discuss?"
+            />
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={newPost.category}
+                label="Category"
+                onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
+              >
+                <MenuItem value="general">General</MenuItem>
+                <MenuItem value="bursaries">Bursaries</MenuItem>
+                <MenuItem value="careers">Careers</MenuItem>
+                <MenuItem value="learnerships">Learnerships</MenuItem>
+                <MenuItem value="business">Business</MenuItem>
+                <MenuItem value="success-stories">Success Stories</MenuItem>
+                <MenuItem value="advice">Advice</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Content"
+              fullWidth
+              multiline
+              rows={6}
+              value={newPost.content}
+              onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+              placeholder="Share your thoughts..."
+            />
+            <TextField
+              label="Tags (comma separated)"
+              fullWidth
+              value={newPost.tags}
+              onChange={(e) => setNewPost({ ...newPost, tags: e.target.value })}
+              placeholder="e.g. NSFAS, tips, help"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleCreatePost} variant="contained" color="warning" disabled={submitting}>
+            {submitting ? 'Posting...' : 'Post'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Box sx={{ bgcolor: '#fff7ed', py: 6 }}>
         <Container maxWidth="md" sx={{ textAlign: 'center' }}>

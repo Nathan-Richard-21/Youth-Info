@@ -67,6 +67,8 @@ const AdminPostPortal = () => {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [previewDialog, setPreviewDialog] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageFile, setImageFile] = useState(null)
   
   const steps = ['Basic Information', 'Details & Requirements', 'Dates & Location', 'Review & Publish']
   
@@ -129,6 +131,54 @@ const AdminPostPortal = () => {
       ...prev,
       tags: prev.tags.filter(t => t !== tagToRemove)
     }))
+  }
+  
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file')
+      return
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB')
+      return
+    }
+    
+    try {
+      setUploadingImage(true)
+      setError('')
+      
+      const formDataUpload = new FormData()
+      formDataUpload.append('image', file)
+      
+      const response = await api.post('/upload/image', formDataUpload, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      
+      // Set the image URL from backend
+      const imageUrl = `http://localhost:5001${response.data.imageUrl}`
+      handleChange('imageUrl', imageUrl)
+      setImageFile(file)
+      setSuccess('Image uploaded successfully!')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      console.error('Image upload error:', err)
+      setError(err.response?.data?.message || 'Failed to upload image')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+  
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, imageUrl: '' }))
+    setImageFile(null)
   }
   
   const validateStep = (step) => {
@@ -278,16 +328,67 @@ const AdminPostPortal = () => {
             </Grid>
             
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Image URL"
-                value={formData.imageUrl}
-                onChange={(e) => handleChange('imageUrl', e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                InputProps={{
-                  startAdornment: <ImageIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                }}
-              />
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Feature Image
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                  <Button
+                    variant="contained"
+                    component="label"
+                    startIcon={<ImageIcon />}
+                    disabled={uploadingImage}
+                  >
+                    {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                    />
+                  </Button>
+                  <TextField
+                    fullWidth
+                    label="Or enter Image URL"
+                    value={formData.imageUrl}
+                    onChange={(e) => handleChange('imageUrl', e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                    size="small"
+                  />
+                </Box>
+                {formData.imageUrl && (
+                  <Box sx={{ mt: 2, position: 'relative', display: 'inline-block' }}>
+                    <img
+                      src={formData.imageUrl}
+                      alt="Preview"
+                      style={{
+                        maxWidth: '200px',
+                        maxHeight: '200px',
+                        borderRadius: '8px',
+                        border: '1px solid #ddd'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                        setError('Failed to load image')
+                      }}
+                    />
+                    <IconButton
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        bgcolor: 'error.main',
+                        color: 'white',
+                        '&:hover': { bgcolor: 'error.dark' }
+                      }}
+                      onClick={removeImage}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
+              </Box>
             </Grid>
           </Grid>
         )
