@@ -18,6 +18,8 @@ const NavBar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [anchorEl, setAnchorEl] = useState(null)
   const token = localStorage.getItem('token')
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const isAdmin = user.role === 'admin'
   const { content, toggleLanguage, language } = useLanguage()
   
   const logout = () => { 
@@ -58,6 +60,7 @@ const NavBar = () => {
               {token ? (
                 <>
                   <MenuItem component={Link} to="/profile" onClick={() => setAnchorEl(null)}>{content.nav.profile}</MenuItem>
+                  {isAdmin && <MenuItem component={Link} to="/admin" onClick={() => setAnchorEl(null)}>Admin Dashboard</MenuItem>}
                   <MenuItem onClick={() => { logout(); setAnchorEl(null); }}>{content.nav.logout}</MenuItem>
                 </>
               ) : (
@@ -81,6 +84,7 @@ const NavBar = () => {
             {token ? (
               <>
                 <Button component={Link} to="/profile" variant="outlined" sx={{ mr: 1 }}>{content.nav.profile}</Button>
+                {isAdmin && <Button component={Link} to="/admin" variant="outlined" sx={{ mr: 1 }}>Admin</Button>}
                 <Button onClick={logout} variant="text">{content.nav.logout}</Button>
               </>
             ) : (
