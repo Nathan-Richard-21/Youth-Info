@@ -3,13 +3,14 @@ import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Butto
 import WorkIcon from '@mui/icons-material/Work'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import BusinessIcon from '@mui/icons-material/Business'
-import ForumIcon from '@mui/icons-material/Forum'
+import EventIcon from '@mui/icons-material/Event'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
 
 const Careers = () => {
-  const [tabValue, setTabValue] = useState(0)
+  const [subcategory, setSubcategory] = useState('')
   const [location, setLocation] = useState('')
   const [search, setSearch] = useState('')
   const [careers, setCareers] = useState([])
@@ -21,7 +22,7 @@ const Careers = () => {
   useEffect(() => {
     fetchCareers()
     if (token) fetchSavedCareers()
-  }, [tabValue])
+  }, [subcategory])
 
   const fetchCareers = async () => {
     try {
@@ -31,6 +32,7 @@ const Careers = () => {
         category: 'career',
         ...(search && { search }),
         ...(location && { location }),
+        ...(subcategory && { subcategory }),
         page: 1,
         limit: 50
       })
@@ -76,20 +78,34 @@ const Careers = () => {
     }
   }
 
-  const handleApply = async (careerId) => {
+  const handleApply = (job) => {
     if (!token) {
       alert('Please login to apply')
       return
     }
-    try {
-      await api.post(`/opportunities/${careerId}/apply`, {
-        coverLetter: 'I am interested in this position',
-        answers: []
-      })
-      alert('Application submitted successfully!')
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to apply')
+    
+    // If job has external application URL, open it
+    if (job.applyUrl) {
+      window.open(job.applyUrl, '_blank')
+    } else if (job.website) {
+      window.open(job.website, '_blank')
+    } else {
+      alert('No application link available')
     }
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return null
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
+  const isExpiringSoon = (dateString) => {
+    if (!dateString) return false
+    const closingDate = new Date(dateString)
+    const today = new Date()
+    const daysUntilClose = Math.ceil((closingDate - today) / (1000 * 60 * 60 * 24))
+    return daysUntilClose <= 7 && daysUntilClose > 0
   }
 
   return (
@@ -110,14 +126,22 @@ const Careers = () => {
       {/* Tabs & Filters */}
       <Container maxWidth="lg" sx={{ mt: -4, position: 'relative', zIndex: 10 }}>
         <Paper elevation={3} sx={{ borderRadius: 3 }}>
-          <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tab label="Jobs & Opportunities" />
-            <Tab label="Internships & Learnerships" />
-          </Tabs>
           <Box sx={{ p: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
-                <TextField fullWidth placeholder="Search jobs or companies..." value={search} onChange={e => setSearch(e.target.value)} />
+                <TextField fullWidth placeholder="Search jobs or companies..." value={search} onChange={e => setSearch(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && fetchCareers()} />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField select fullWidth label="Education Level" value={subcategory} onChange={e => setSubcategory(e.target.value)}>
+                  <MenuItem value="">All Levels</MenuItem>
+                  <MenuItem value="no-matric">No Matric Required</MenuItem>
+                  <MenuItem value="matric">Matric</MenuItem>
+                  <MenuItem value="diploma">Diploma</MenuItem>
+                  <MenuItem value="degree">Degree</MenuItem>
+                  <MenuItem value="postgraduate">Postgraduate</MenuItem>
+                  <MenuItem value="internship">Internship</MenuItem>
+                  <MenuItem value="graduate-program">Graduate Program</MenuItem>
+                </TextField>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField select fullWidth label="Location" value={location} onChange={e => setLocation(e.target.value)}>
@@ -126,17 +150,13 @@ const Careers = () => {
                   <MenuItem value="East London">East London</MenuItem>
                   <MenuItem value="Mthatha">Mthatha</MenuItem>
                   <MenuItem value="Grahamstown">Grahamstown</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <TextField select fullWidth label="Job Type">
-                  <MenuItem value="">All Types</MenuItem>
-                  <MenuItem value="Full-time">Full-time</MenuItem>
-                  <MenuItem value="Internship">Internship</MenuItem>
-                  <MenuItem value="Graduate">Graduate Program</MenuItem>
+                  <MenuItem value="Remote">Remote</MenuItem>
                 </TextField>
               </Grid>
             </Grid>
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button variant="contained" onClick={fetchCareers} fullWidth>Search Opportunities</Button>
+            </Box>
           </Box>
         </Paper>
       </Container>
@@ -183,11 +203,22 @@ const Careers = () => {
                                 </>
                               )}
                             </Box>
+                            {job.closingDate && (
+                              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
+                                <EventIcon fontSize="small" color="action" />
+                                <Typography variant="body2" color={isExpiringSoon(job.closingDate) ? 'error.main' : 'text.secondary'}>
+                                  Closes: {formatDate(job.closingDate)}
+                                  {isExpiringSoon(job.closingDate) && ' (Closing Soon!)'}
+                                </Typography>
+                              </Box>
+                            )}
                           </Box>
                           <Box sx={{ textAlign: 'right' }}>
                             {job.employmentType && <Chip label={job.employmentType} size="small" color="primary" sx={{ mb: 1 }} />}
+                            {job.subcategory && <Chip label={job.subcategory} size="small" sx={{ ml: 1, mb: 1 }} />}
                             {job.featured && <Chip label="Featured" size="small" color="secondary" sx={{ ml: 1, mb: 1 }} />}
                             {job.urgent && <Chip label="Urgent" size="small" color="error" sx={{ ml: 1, mb: 1 }} />}
+                            {isExpiringSoon(job.closingDate) && <Chip label="Closing Soon" size="small" color="warning" sx={{ ml: 1, mb: 1 }} />}
                           </Box>
                         </Box>
                         {job.salary && (
@@ -217,7 +248,13 @@ const Careers = () => {
                         )}
                       </CardContent>
                       <CardActions sx={{ px: 2, pb: 2 }}>
-                        <Button variant="contained" onClick={() => handleApply(job._id)}>Apply Now</Button>
+                        <Button 
+                          variant="contained" 
+                          onClick={() => handleApply(job)}
+                          endIcon={<OpenInNewIcon />}
+                        >
+                          Apply Now
+                        </Button>
                         <Button 
                           variant="outlined"
                           onClick={() => handleSave(job._id)}

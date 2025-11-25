@@ -4,7 +4,10 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import ForumIcon from '@mui/icons-material/Forum'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
+import EventIcon from '@mui/icons-material/Event'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
+import { formatDate, isExpiringSoon } from '../utils/dateUtils'
 
 const Learnerships = () => {
   const [learnerships, setLearnerships] = useState([])
@@ -54,10 +57,18 @@ const Learnerships = () => {
     }
   }
 
-  const handleApply = async (id) => {
+  const handleApply = async (learnership) => {
     if (!token) return alert('Please login')
+    
+    // If external URL exists, open it
+    if (learnership.applyUrl) {
+      window.open(learnership.applyUrl, '_blank')
+      return
+    }
+    
+    // Otherwise submit internal application
     try {
-      await api.post(`/opportunities/${id}/apply`, { coverLetter: 'Interested', answers: [] })
+      await api.post(`/opportunities/${learnership._id}/apply`, { coverLetter: 'Interested', answers: [] })
       alert('Application submitted!')
     } catch (err) {
       alert(err.response?.data?.message || 'Failed')
@@ -123,6 +134,15 @@ const Learnerships = () => {
                             <strong>Location:</strong> {learn.location}
                           </Typography>
                         )}
+                        {learn.closingDate && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                            <EventIcon fontSize="small" color="action" />
+                            <Typography variant="body2" color={isExpiringSoon(learn.closingDate) ? 'error' : 'text.secondary'}>
+                              <strong>Closes:</strong> {formatDate(learn.closingDate)}
+                              {isExpiringSoon(learn.closingDate) && ' ⚠️ Closing Soon!'}
+                            </Typography>
+                          </Box>
+                        )}
                         <Typography variant="body2" color="text.secondary" sx={{ 
                           overflow: 'hidden', textOverflow: 'ellipsis', 
                           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' 
@@ -136,7 +156,14 @@ const Learnerships = () => {
                         )}
                       </CardContent>
                       <CardActions>
-                        <Button variant="contained" color="warning" onClick={() => handleApply(learn._id)}>Apply Now</Button>
+                        <Button 
+                          variant="contained" 
+                          color="warning" 
+                          onClick={() => handleApply(learn)}
+                          endIcon={learn.applyUrl ? <OpenInNewIcon /> : null}
+                        >
+                          Apply Now
+                        </Button>
                         <Button onClick={() => handleSave(learn._id)}
                           startIcon={saved.has(learn._id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}>
                           {saved.has(learn._id) ? 'Saved' : 'Save'}

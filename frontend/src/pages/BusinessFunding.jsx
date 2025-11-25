@@ -4,7 +4,10 @@ import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
 import ForumIcon from '@mui/icons-material/Forum'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
+import EventIcon from '@mui/icons-material/Event'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
+import { formatDate, isExpiringSoon } from '../utils/dateUtils'
 
 const BusinessFunding = () => {
   const [tabValue, setTabValue] = useState(0)
@@ -55,10 +58,18 @@ const BusinessFunding = () => {
     }
   }
 
-  const handleApply = async (id) => {
+  const handleApply = async (opportunity) => {
     if (!token) return alert('Please login')
+    
+    // If external URL exists, open it
+    if (opportunity.applyUrl) {
+      window.open(opportunity.applyUrl, '_blank')
+      return
+    }
+    
+    // Otherwise submit internal application
     try {
-      await api.post(`/opportunities/${id}/apply`, { coverLetter: 'Interested in funding', answers: [] })
+      await api.post(`/opportunities/${opportunity._id}/apply`, { coverLetter: 'Interested in funding', answers: [] })
       alert('Application submitted!')
     } catch (err) {
       alert(err.response?.data?.message || 'Failed')
@@ -130,6 +141,15 @@ const BusinessFunding = () => {
                             <strong>Location:</strong> {g.location}
                           </Typography>
                         )}
+                        {g.closingDate && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                            <EventIcon fontSize="small" color="action" />
+                            <Typography variant="body2" color={isExpiringSoon(g.closingDate) ? 'error' : 'text.secondary'}>
+                              <strong>Closes:</strong> {formatDate(g.closingDate)}
+                              {isExpiringSoon(g.closingDate) && ' ⚠️ Closing Soon!'}
+                            </Typography>
+                          </Box>
+                        )}
                         <Typography variant="body2" color="text.secondary" sx={{
                           overflow: 'hidden', textOverflow: 'ellipsis',
                           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'
@@ -143,7 +163,14 @@ const BusinessFunding = () => {
                         )}
                       </CardContent>
                       <CardActions>
-                        <Button variant="contained" color="error" onClick={() => handleApply(g._id)}>Apply</Button>
+                        <Button 
+                          variant="contained" 
+                          color="error" 
+                          onClick={() => handleApply(g)}
+                          endIcon={g.applyUrl ? <OpenInNewIcon /> : null}
+                        >
+                          Apply
+                        </Button>
                         <Button onClick={() => handleSave(g._id)}
                           startIcon={saved.has(g._id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}>
                           {saved.has(g._id) ? 'Saved' : 'Save'}

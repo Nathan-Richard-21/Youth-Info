@@ -19,9 +19,12 @@ import ResumeBuilder from './pages/ResumeBuilder'
 import KnowledgeBase from './pages/KnowledgeBase'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Profile from './pages/Profile'
-import AdminDashboard from './pages/AdminDashboard'
+import AdminDashboard from './pages/AdminDashboardNew'
 import AdminPostPortal from './pages/AdminPostPortal'
+import StakeholderDashboard from './pages/StakeholderDashboard'
 
 const theme = createTheme({
   palette: {
@@ -64,9 +67,12 @@ const App = () => {
               <Route path="/knowledge-base" element={<KnowledgeBase />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/post" element={<AdminPostPortal />} />
+              <Route path="/stakeholder" element={<StakeholderDashboard />} />
             </Routes>
           </main>
           <Footer />

@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Box, Container, Typography, Grid, Card, CardContent, Button, Chip, Tab, Tabs, CircularProgress, Alert } from '@mui/material'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
+import EventIcon from '@mui/icons-material/Event'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
+import { formatDate, isExpiringSoon } from '../utils/dateUtils'
 
 const Events = () => {
   const [tabValue, setTabValue] = useState(0)
@@ -28,9 +31,16 @@ const Events = () => {
     }
   }
 
-  const handleRegister = async (eventId) => {
+  const handleRegister = async (event) => {
+    // If external URL exists, open it
+    if (event.applyUrl) {
+      window.open(event.applyUrl, '_blank')
+      return
+    }
+    
+    // Otherwise submit internal registration
     try {
-      await api.post(`/opportunities/${eventId}/apply`, {
+      await api.post(`/opportunities/${event._id}/apply`, {
         message: 'I would like to register for this event.'
       })
       alert('Registration submitted successfully!')
@@ -104,10 +114,14 @@ const Events = () => {
                         <strong>Duration:</strong> {new Date(event.startDate).toLocaleDateString('en-ZA')} - {new Date(event.endDate).toLocaleDateString('en-ZA')}
                       </Typography>
                     )}
-                    {event.deadline && (
-                      <Typography variant="body2" color="error.main" sx={{ mt: 1, fontWeight: 600 }}>
-                        Registration closes: {new Date(event.deadline).toLocaleDateString('en-ZA')}
-                      </Typography>
+                    {event.closingDate && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
+                        <EventIcon fontSize="small" color="action" />
+                        <Typography variant="body2" color={isExpiringSoon(event.closingDate) ? 'error' : 'text.secondary'} fontWeight={600}>
+                          Registration closes: {formatDate(event.closingDate)}
+                          {isExpiringSoon(event.closingDate) && ' ⚠️ Closing Soon!'}
+                        </Typography>
+                      </Box>
                     )}
                     {event.views > 0 && (
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
@@ -120,7 +134,8 @@ const Events = () => {
                       variant="contained" 
                       fullWidth 
                       sx={{ bgcolor: '#06b6d4' }}
-                      onClick={() => handleRegister(event._id)}
+                      onClick={() => handleRegister(event)}
+                      endIcon={event.applyUrl ? <OpenInNewIcon /> : null}
                     >
                       Register / RSVP
                     </Button>

@@ -4,7 +4,10 @@ import SchoolIcon from '@mui/icons-material/School'
 import SearchIcon from '@mui/icons-material/Search'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
+import EventIcon from '@mui/icons-material/Event'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
+import { formatDate, isExpiringSoon } from '../utils/dateUtils'
 
 const Bursaries = () => {
   const [search, setSearch] = useState('')
@@ -79,19 +82,19 @@ const Bursaries = () => {
     }
   }
 
-  const handleApply = async (bursaryId) => {
+  const handleApply = (bursary) => {
     if (!token) {
       alert('Please login to apply')
       return
     }
-    try {
-      await api.post(`/opportunities/${bursaryId}/apply`, {
-        coverLetter: 'I am interested in this opportunity',
-        answers: []
-      })
-      alert('Application submitted successfully!')
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to apply')
+    
+    // If bursary has external application URL, open it
+    if (bursary.applyUrl) {
+      window.open(bursary.applyUrl, '_blank')
+    } else if (bursary.website) {
+      window.open(bursary.website, '_blank')
+    } else {
+      alert('No application link available')
     }
   }
 
@@ -180,15 +183,26 @@ const Bursaries = () => {
                       )}
                       <CardContent sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                          {b.subcategory && <Chip label={b.subcategory} size="small" color="primary" />}
-                          {b.deadline && <Chip label={`Deadline: ${new Date(b.deadline).toLocaleDateString()}`} size="small" variant="outlined" />}
-                          {b.featured && <Chip label="Featured" size="small" color="secondary" />}
-                          {b.urgent && <Chip label="Urgent" size="small" color="error" />}
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {b.subcategory && <Chip label={b.subcategory} size="small" color="primary" />}
+                            {b.featured && <Chip label="Featured" size="small" color="secondary" />}
+                            {b.urgent && <Chip label="Urgent" size="small" color="error" />}
+                            {isExpiringSoon(b.closingDate) && <Chip label="Closing Soon" size="small" color="warning" />}
+                          </Box>
                         </Box>
                         <Typography variant="h6" fontWeight={600} gutterBottom>{b.title}</Typography>
                         <Typography variant="body2" color="text.secondary" gutterBottom>
                           <strong>Provider:</strong> {b.organization}
                         </Typography>
+                        {b.closingDate && (
+                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
+                            <EventIcon fontSize="small" color="action" />
+                            <Typography variant="body2" color={isExpiringSoon(b.closingDate) ? 'error.main' : 'text.secondary'}>
+                              Closes: {formatDate(b.closingDate)}
+                              {isExpiringSoon(b.closingDate) && ' (Closing Soon!)'}
+                            </Typography>
+                          </Box>
+                        )}
                         {b.amount && (
                           <Typography variant="body2" color="success.main" fontWeight={600} gutterBottom>
                             {b.amount} {b.fundingType && `(${b.fundingType})`}
@@ -215,7 +229,14 @@ const Bursaries = () => {
                         )}
                       </CardContent>
                       <CardActions sx={{ p: 2, pt: 0 }}>
-                        <Button variant="contained" fullWidth onClick={() => handleApply(b._id)}>Apply Now</Button>
+                        <Button 
+                          variant="contained" 
+                          fullWidth 
+                          onClick={() => handleApply(b)}
+                          endIcon={<OpenInNewIcon />}
+                        >
+                          Apply Now
+                        </Button>
                         <Button 
                           variant="outlined" 
                           onClick={() => handleSave(b._id)}

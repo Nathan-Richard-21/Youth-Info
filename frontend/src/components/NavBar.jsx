@@ -20,6 +20,7 @@ const NavBar = () => {
   const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const isAdmin = user.role === 'admin'
+  const isStakeholder = user.role === 'stakeholder'
   const { content, toggleLanguage, language } = useLanguage()
   
   const logout = () => { 
@@ -61,6 +62,7 @@ const NavBar = () => {
                 <>
                   <MenuItem component={Link} to="/profile" onClick={() => setAnchorEl(null)}>{content.nav.profile}</MenuItem>
                   {isAdmin && <MenuItem component={Link} to="/admin" onClick={() => setAnchorEl(null)}>Admin Dashboard</MenuItem>}
+                  {isStakeholder && <MenuItem component={Link} to="/stakeholder" onClick={() => setAnchorEl(null)}>Stakeholder Dashboard</MenuItem>}
                   <MenuItem onClick={() => { logout(); setAnchorEl(null); }}>{content.nav.logout}</MenuItem>
                 </>
               ) : (
@@ -85,6 +87,7 @@ const NavBar = () => {
               <>
                 <Button component={Link} to="/profile" variant="outlined" sx={{ mr: 1 }}>{content.nav.profile}</Button>
                 {isAdmin && <Button component={Link} to="/admin" variant="outlined" sx={{ mr: 1 }}>Admin</Button>}
+                {isStakeholder && <Button component={Link} to="/stakeholder" variant="outlined" sx={{ mr: 1 }}>Dashboard</Button>}
                 <Button onClick={logout} variant="text">{content.nav.logout}</Button>
               </>
             ) : (

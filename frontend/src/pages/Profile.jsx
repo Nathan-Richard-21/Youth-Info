@@ -36,30 +36,23 @@ const Profile = () => {
 
   const loadUserData = async () => {
     try {
-      const res = await api.get('/users/me')
-      setUser(res.data)
-      setEditedUser(res.data)
-      
-      // Load user's saved opportunities and applications (mock data for now)
-      setSavedOpportunities([
-        { id: 1, title: 'NSFAS Bursary 2026', category: 'Bursary', savedDate: '2025-11-20', deadline: '2025-12-31' },
-        { id: 2, title: 'EC Youth Employment Program', category: 'Career', savedDate: '2025-11-19', deadline: '2025-11-30' },
-        { id: 3, title: 'NYDA Business Grant', category: 'Funding', savedDate: '2025-11-18', deadline: '2025-12-15' }
+      const [userRes, savedRes, appsRes] = await Promise.all([
+        api.get('/users/me'),
+        api.get('/users/me/saved'),
+        api.get('/users/me/applications')
       ])
       
-      setApplications([
-        { id: 1, title: 'NSFAS Bursary 2026', status: 'Under Review', appliedDate: '2025-11-15', category: 'Bursary' },
-        { id: 2, title: 'Software Developer Internship', status: 'Approved', appliedDate: '2025-11-10', category: 'Career' },
-        { id: 3, title: 'Youth Learnership Programme', status: 'Pending', appliedDate: '2025-11-05', category: 'Learnership' }
-      ])
+      setUser(userRes.data)
+      setEditedUser(userRes.data)
+      setSavedOpportunities(savedRes.data || [])
+      setApplications(appsRes.data || [])
       
-      // Load user preferences from localStorage or API
-      const savedPrefs = localStorage.getItem('userPreferences')
-      if (savedPrefs) {
-        setPreferences(JSON.parse(savedPrefs))
+      // Load user preferences
+      if (userRes.data.preferences) {
+        setPreferences(userRes.data.preferences)
       }
     } catch (err) {
-      console.error(err)
+      console.error('Error loading user data:', err)
     } finally { 
       setLoading(false) 
     }

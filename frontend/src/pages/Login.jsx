@@ -50,6 +50,11 @@ const Login = () => {
         <Button type="submit" variant="contained" sx={{ mt: 2 }} fullWidth>
           Login
         </Button>
+        <Box mt={1} textAlign="center">
+          <Link to="/forgot-password" style={{ color: '#6366f1', textDecoration: 'none', fontSize: '0.875rem' }}>
+            Forgot Password?
+          </Link>
+        </Box>
       </form>
       <Box mt={2} textAlign="center">
         <Typography variant="body2">
