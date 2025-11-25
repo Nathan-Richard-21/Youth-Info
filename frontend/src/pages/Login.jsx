@@ -13,11 +13,15 @@ const Login = () => {
   const submit = async (e) => {
     e.preventDefault()
     try {
+      console.log('🔐 Logging in...')
       const res = await api.post('/auth/login', { email, password })
+      console.log('✅ Login successful, token received')
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
-      nav('/opportunities')
+      console.log('Token and user saved to localStorage')
+      nav('/forums')
     } catch (err) {
+      console.error('❌ Login error:', err)
       setErr(err.response?.data?.message || 'Login failed')
     }
   }

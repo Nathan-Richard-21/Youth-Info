@@ -41,24 +41,41 @@ const Forums = () => {
       return
     }
 
+    console.log('📝 Creating forum post...')
+    console.log('Token in localStorage:', localStorage.getItem('token') ? 'EXISTS' : 'MISSING')
+    console.log('User in localStorage:', localStorage.getItem('user'))
+
     try {
       setSubmitting(true)
       const tagsArray = newPost.tags.split(',').map(t => t.trim()).filter(t => t)
-      await api.post('/forum/posts', {
+      console.log('Sending POST request to /forum/posts')
+      const response = await api.post('/forum/posts', {
         title: newPost.title,
         content: newPost.content,
         category: newPost.category,
         tags: tagsArray
       })
+      console.log('✅ Post created successfully:', response.data)
       setCreateDialogOpen(false)
       setNewPost({ title: '', content: '', category: 'general', tags: '' })
       fetchPosts()
       alert('Post created successfully!')
     } catch (err) {
+      console.error('❌ Forum post error:', err)
+      console.error('Error response:', err.response?.data)
+      console.error('Error status:', err.response?.status)
       if (err.response?.status === 401) {
-        alert('Please log in to create a post.')
+        const errorMsg = err.response?.data?.message || ''
+        if (errorMsg.includes('User not found')) {
+          // Old token format - need to re-login
+          alert('⚠️ Your login session is using an old token format. Please logout and login again to fix this.\n\nClick OK to logout now.')
+          localStorage.clear()
+          window.location.href = '/login'
+        } else {
+          alert('Authentication failed. Your session may have expired. Please log out and log in again.')
+        }
       } else {
-        alert('Failed to create post. Please try again.')
+        alert('Failed to create post: ' + (err.response?.data?.message || err.message))
       }
     } finally {
       setSubmitting(false)

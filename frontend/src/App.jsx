@@ -21,10 +21,12 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
-import Profile from './pages/Profile'
+import Profile from './pages/ProfileNew'
 import AdminDashboard from './pages/AdminDashboardNew'
 import AdminPostPortal from './pages/AdminPostPortal'
+import AdminSettings from './pages/AdminSettings'
 import StakeholderDashboard from './pages/StakeholderDashboard'
+import Opportunities from './pages/Opportunities'
 
 const theme = createTheme({
   palette: {
@@ -55,6 +57,7 @@ const App = () => {
           <main style={{ flex: 1 }}>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/opportunities" element={<Opportunities />} />
               <Route path="/bursaries" element={<Bursaries />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/learnerships" element={<Learnerships />} />
@@ -72,6 +75,7 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/post" element={<AdminPostPortal />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="/stakeholder" element={<StakeholderDashboard />} />
             </Routes>
           </main>

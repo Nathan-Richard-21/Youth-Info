@@ -137,7 +137,7 @@ const Events = () => {
                       onClick={() => handleRegister(event)}
                       endIcon={event.applyUrl ? <OpenInNewIcon /> : null}
                     >
-                      Register / RSVP
+                      {event.applyUrl ? 'Register (External)' : 'Register / RSVP'}
                     </Button>
                   </Box>
                 </Card>

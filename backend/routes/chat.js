@@ -1,5 +1,112 @@
 const express = require('express');
 const router = express.Router();
+const { auth } = require('../utils/authMiddleware');
+
+// GPT-powered career chatbot
+router.post('/gpt', auth, async (req, res) => {
+  try {
+    const { message, history = [] } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ message: 'Message is required' });
+    }
+
+    // Generate helpful response (mock for now, can integrate OpenAI later)
+    const response = generateCareerResponse(message);
+    return res.json({ message: response });
+  } catch (err) {
+    console.error('GPT Chat error:', err);
+    res.status(500).json({ message: 'Sorry, I encountered an error. Please try again.' });
+  }
+});
+
+// Generate career advice responses
+function generateCareerResponse(message) {
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('bursary') || lowerMessage.includes('scholarship')) {
+    return `Great question about bursaries! Here are some tips:
+
+1. **NSFAS**: Apply for the National Student Financial Aid Scheme if you're from a household earning less than R350,000/year
+2. **Corporate Bursaries**: Companies like Sasol, Eskom, Anglo American offer bursaries
+3. **Start Early**: Most open applications July-August
+4. **Requirements**: Good academic record (60%+), financial need
+
+Check our Bursaries page regularly for new opportunities!`;
+  }
+  
+  if (lowerMessage.includes('cv') || lowerMessage.includes('resume')) {
+    return `CV Tips for South African Youth:
+
+✅ **Keep it concise**: 1-2 pages maximum
+✅ **Include**: Contact details, education, skills, work experience
+✅ **Highlight achievements**: Use numbers where possible
+✅ **Proofread**: No typos!
+✅ **Tailor it**: Customize for each application
+
+Use our Resume Builder tool!`;
+  }
+  
+  if (lowerMessage.includes('interview')) {
+    return `Interview Success Tips:
+
+🎯 **Preparation**:
+- Research the company
+- Practice common questions
+- Prepare your own questions
+
+💼 **During Interview**:
+- Dress professionally
+- Arrive 10 minutes early
+- Make eye contact and smile
+- Use STAR method for examples
+
+🤝 **Follow-up**:
+- Send thank-you email within 24 hours
+
+Good luck! 💪`;
+  }
+  
+  if (lowerMessage.includes('learnership')) {
+    return `Learnerships combine theory + practical work:
+
+📚 **Benefits**:
+- Earn while you learn
+- Gain real work experience
+- Nationally recognized qualification
+- No student debt
+
+🔍 **How to find**: Check our Learnerships page!
+
+Popular fields: IT, Engineering, Finance, Healthcare`;
+  }
+  
+  if (lowerMessage.includes('business') || lowerMessage.includes('funding')) {
+    return `Business Funding Opportunities:
+
+💰 **Government Support**:
+- SEDA (Small Enterprise Development)
+- NEF (National Empowerment Fund)
+- IDC (Industrial Development Corp)
+
+🚀 **Youth Programs**:
+- Youth Enterprise Development Fund
+- Awethu Project
+
+Check our Business Funding page!`;
+  }
+  
+  return `Hi! I'm your career assistant! 👋
+
+I can help with:
+🎓 Bursaries & Scholarships
+💼 Career opportunities
+📚 Learnerships
+💰 Business Funding
+📄 CV & Interview tips
+
+What would you like to know?`;
+}
 
 // Medical info chatbot - interactive Q&A for health topics
 router.post('/', async (req, res) => {

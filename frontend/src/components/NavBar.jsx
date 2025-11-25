@@ -8,6 +8,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import MenuIcon from '@mui/icons-material/Menu'
 import TranslateIcon from '@mui/icons-material/Translate'
+import SettingsIcon from '@mui/icons-material/Settings'
 import { Link, useNavigate } from 'react-router-dom'
 import { Box, useMediaQuery, useTheme, Tooltip } from '@mui/material'
 import { useLanguage } from '../context/LanguageContext'
@@ -55,6 +56,13 @@ const NavBar = () => {
                 <TranslateIcon />
               </IconButton>
             </Tooltip>
+            {isAdmin && (
+              <Tooltip title="Admin Settings (DEV)">
+                <IconButton component={Link} to="/admin/settings" color="secondary">
+                  <SettingsIcon />
+                </IconButton>
+              </Tooltip>
+            )}
             <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}><MenuIcon /></IconButton>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
               {pages.map(p => <MenuItem key={p.path} component={Link} to={p.path} onClick={() => setAnchorEl(null)}>{p.label}</MenuItem>)}
@@ -86,7 +94,16 @@ const NavBar = () => {
             {token ? (
               <>
                 <Button component={Link} to="/profile" variant="outlined" sx={{ mr: 1 }}>{content.nav.profile}</Button>
-                {isAdmin && <Button component={Link} to="/admin" variant="outlined" sx={{ mr: 1 }}>Admin</Button>}
+                {isAdmin && (
+                  <>
+                    <Button component={Link} to="/admin" variant="outlined" sx={{ mr: 1 }}>Admin</Button>
+                    <Tooltip title="Admin Settings (DEV)">
+                      <IconButton component={Link} to="/admin/settings" color="secondary" sx={{ mr: 1 }}>
+                        <SettingsIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                )}
                 {isStakeholder && <Button component={Link} to="/stakeholder" variant="outlined" sx={{ mr: 1 }}>Dashboard</Button>}
                 <Button onClick={logout} variant="text">{content.nav.logout}</Button>
               </>

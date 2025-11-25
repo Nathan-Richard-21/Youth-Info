@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react'
-import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Avatar, Chip, Button, CircularProgress, Alert } from '@mui/material'
+import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Avatar, Chip, Button, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
+import ShareIcon from '@mui/icons-material/Share'
 import api from '../api'
 
 const SuccessStories = () => {
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [newStory, setNewStory] = useState({
+    title: '',
+    description: '',
+    location: '',
+    organization: ''
+  })
+
+  const isLoggedIn = !!localStorage.getItem('token')
 
   useEffect(() => {
     fetchStories()
@@ -21,6 +32,97 @@ const SuccessStories = () => {
       setError('Failed to load success stories')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleShareStory = async () => {
+    console.log('\n========================================');
+    console.log('🚀 SHARE STORY FUNCTION CALLED');
+    console.log('========================================');
+    console.log('isLoggedIn:', isLoggedIn);
+    console.log('Token exists:', !!localStorage.getItem('token'));
+    console.log('User in localStorage:', localStorage.getItem('user'));
+    console.log('newStory data:', JSON.stringify(newStory, null, 2));
+    
+    if (!isLoggedIn) {
+      console.log('❌ User not logged in - redirecting');
+      alert('Please log in to share your success story.')
+      window.location.href = '/login'
+      return
+    }
+
+    if (!newStory.title.trim() || !newStory.description.trim()) {
+      console.log('❌ Validation failed - missing title or description');
+      alert('Please fill in at least the title and description.')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      console.log('\n📝 Preparing to submit success story...');
+      
+      // Set closing date to 1 year from now (success stories don't really expire)
+      const closingDate = new Date()
+      closingDate.setFullYear(closingDate.getFullYear() + 1)
+      console.log('📅 Closing date set to:', closingDate.toISOString());
+      
+      const storyData = {
+        title: newStory.title.trim(),
+        description: newStory.description.trim(),
+        category: 'success-story',
+        location: newStory.location.trim() || 'Eastern Cape',
+        organization: newStory.organization.trim() || 'Community Member',
+        closingDate: closingDate.toISOString(),
+        requirements: [],
+        tags: ['success', 'inspiration', 'youth']
+      }
+      
+      console.log('\n📤 Sending POST request to /opportunities');
+      console.log('Data to send:');
+      console.log(JSON.stringify(storyData, null, 2));
+      
+      const response = await api.post('/opportunities', storyData)
+      
+      console.log('\n✅ SUCCESS! Response received:');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(response.data, null, 2));
+      console.log('========================================\n');
+      
+      alert('Your success story has been submitted! It will be reviewed by our team before being published.')
+      setShareDialogOpen(false)
+      setNewStory({ title: '', description: '', location: '', organization: '' })
+      fetchStories()
+    } catch (err) {
+      console.error('\n❌❌❌ ERROR SUBMITTING STORY ❌❌❌');
+      console.error('Error object:', err);
+      console.error('Error message:', err.message);
+      console.error('Error response:', err.response);
+      console.error('Response data:', err.response?.data);
+      console.error('Response status:', err.response?.status);
+      console.error('Response headers:', err.response?.headers);
+      console.error('========================================\n');
+      
+      if (err.response?.status === 401) {
+        const msg = err.response?.data?.message || 'Authentication failed'
+        alert('⚠️ Authentication Error\n\n' + msg + '\n\nPlease try logging in again.')
+      } else {
+        const errorMsg = err.response?.data?.message || err.message
+        const errors = err.response?.data?.errors
+        const details = err.response?.data?.details
+        
+        let alertMsg = 'Failed to submit your story:\n\n' + errorMsg
+        
+        if (details && details.length > 0) {
+          alertMsg += '\n\nValidation errors:'
+          details.forEach(d => {
+            alertMsg += `\n- ${d.field}: ${d.message}`
+          })
+        }
+        
+        alert(alertMsg)
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -101,10 +203,96 @@ const SuccessStories = () => {
             Share your journey and inspire others in the Eastern Cape youth community
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button variant="contained" sx={{ bgcolor: '#8b5cf6' }}>Share Your Story</Button>
+            <Button 
+              variant="contained" 
+              sx={{ bgcolor: '#8b5cf6' }}
+              startIcon={<ShareIcon />}
+              onClick={() => setShareDialogOpen(true)}
+            >
+              Share Your Story
+            </Button>
           </Box>
         </Container>
       </Box>
+
+      {/* Share Story Dialog */}
+      <Dialog 
+        open={shareDialogOpen} 
+        onClose={() => setShareDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ShareIcon color="primary" />
+            <Typography variant="h6" fontWeight={600}>Share Your Success Story</Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" mb={3}>
+            Tell us about your journey! Your story will inspire other young people in Eastern Cape.
+          </Typography>
+          
+          <TextField
+            label="Story Title"
+            fullWidth
+            margin="normal"
+            value={newStory.title}
+            onChange={(e) => setNewStory({ ...newStory, title: e.target.value })}
+            placeholder="e.g., From Unemployed to Software Developer"
+            required
+          />
+          
+          <TextField
+            label="Your Story"
+            fullWidth
+            margin="normal"
+            multiline
+            rows={6}
+            value={newStory.description}
+            onChange={(e) => setNewStory({ ...newStory, description: e.target.value })}
+            placeholder="Tell us about your journey, challenges you faced, how you overcame them, and where you are now..."
+            required
+          />
+          
+          <TextField
+            label="Location (Optional)"
+            fullWidth
+            margin="normal"
+            value={newStory.location}
+            onChange={(e) => setNewStory({ ...newStory, location: e.target.value })}
+            placeholder="e.g., East London, Port Elizabeth"
+          />
+          
+          <TextField
+            label="Organization/Company (Optional)"
+            fullWidth
+            margin="normal"
+            value={newStory.organization}
+            onChange={(e) => setNewStory({ ...newStory, organization: e.target.value })}
+            placeholder="e.g., Your current company or institution"
+          />
+          
+          {!isLoggedIn && (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              You need to be logged in to share your story. Click "Submit" to be redirected to login.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => setShareDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={handleShareStory}
+            disabled={submitting}
+            sx={{ bgcolor: '#8b5cf6' }}
+          >
+            {submitting ? 'Submitting...' : 'Submit Story'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

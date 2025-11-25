@@ -37,6 +37,20 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
+// Token verification endpoint
+const auth = require('./middleware/auth');
+app.get('/api/verify-token', auth, (req, res) => {
+  res.json({ 
+    valid: true, 
+    user: { 
+      id: req.user._id, 
+      name: req.user.name, 
+      email: req.user.email,
+      role: req.user.role 
+    } 
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 const MONGO = process.env.MONGO_URI || 'mongodb://localhost:27017/youthportal';
 

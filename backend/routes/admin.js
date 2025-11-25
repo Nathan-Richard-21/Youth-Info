@@ -117,6 +117,47 @@ router.patch('/users/:id/activate', auth, isAdmin, async (req, res) => {
   }
 });
 
+// Update user role (ADMIN ONLY)
+router.patch('/users/:id/role', auth, isAdmin, async (req, res) => {
+  try {
+    const { role } = req.body;
+    
+    // Validate role
+    const validRoles = ['user', 'stakeholder', 'admin'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ 
+        message: 'Invalid role. Must be: user, stakeholder, or admin' 
+      });
+    }
+    
+    // Don't allow changing your own role
+    if (req.params.id === req.user.id) {
+      return res.status(403).json({ 
+        message: 'Cannot change your own role' 
+      });
+    }
+    
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { role },
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log(`✅ User role updated: ${user.email} → ${role} (by ${req.user.email})`);
+    
+    res.json({ 
+      message: `User role updated to ${role}`, 
+      user 
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.delete('/users/:id', auth, isAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

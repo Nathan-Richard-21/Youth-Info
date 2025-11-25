@@ -13,7 +13,7 @@ router.post('/register', async (req, res) => {
     if (exists) return res.status(400).json({ message: 'Email taken' });
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, password: hash });
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -22,14 +22,25 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
+    console.log('🔐 LOGIN ATTEMPT:', req.body.email);
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!user) {
+      console.log('❌ User not found:', email);
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+    console.log('👤 User found:', user.name, 'ID:', user._id);
     const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(400).json({ message: 'Invalid credentials' });
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    if (!ok) {
+      console.log('❌ Invalid password');
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    console.log('✅ LOGIN SUCCESS - Token generated (first 20 chars):', token.substring(0, 20));
+    console.log('Token payload will contain userId:', user._id);
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
+    console.error('❌ LOGIN ERROR:', err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -62,7 +73,7 @@ router.post('/google', async (req, res) => {
       });
     }
     
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ message: err.message });
