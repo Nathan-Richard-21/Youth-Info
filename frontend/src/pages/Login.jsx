@@ -19,7 +19,9 @@ const Login = () => {
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
       console.log('Token and user saved to localStorage')
-      nav('/forums')
+      
+      // Redirect to home page after successful login
+      nav('/')
     } catch (err) {
       console.error('❌ Login error:', err)
       setErr(err.response?.data?.message || 'Login failed')

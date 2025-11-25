@@ -30,15 +30,20 @@ const GoogleSignIn = ({ mode = 'signin' }) => {
 
   const handleCredentialResponse = async (response) => {
     try {
+      console.log('🔐 Google Sign-In: Processing credential...')
       const res = await api.post('/auth/google', {
         credential: response.credential
       })
       
+      console.log('✅ Google Sign-In successful, token received')
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
-      navigate('/opportunities')
+      console.log('Token and user saved to localStorage')
+      
+      // Redirect to home page instead of opportunities
+      navigate('/')
     } catch (err) {
-      console.error('Google Sign-In error:', err)
+      console.error('❌ Google Sign-In error:', err)
       alert(err.response?.data?.message || 'Google Sign-In failed')
     }
   }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Typography, TextField, Button, MenuItem, Card, CardContent, CardActions, Grid, Chip } from '@mui/material'
+import { Box, Typography, TextField, Button, MenuItem, Card, CardContent, CardActions, Grid, Chip, Container } from '@mui/material'
 import api from '../api'
 
 const Opportunities = () => {
@@ -22,7 +22,7 @@ const Opportunities = () => {
   const handleSearch = () => { load() }
 
   return (
-    <Box>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" mb={3}>Youth Opportunities</Typography>
       
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -77,7 +77,7 @@ const Opportunities = () => {
           </Grid>
         ))}
       </Grid>
-    </Box>
+    </Container>
   )
 }
 

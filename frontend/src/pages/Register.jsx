@@ -17,7 +17,9 @@ const Register = () => {
       const res = await api.post('/auth/register', { name, email, password })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
-      nav('/opportunities')
+      
+      // Redirect to home page after successful registration
+      nav('/')
     } catch (err) {
       setErr(err.response?.data?.message || 'Registration failed')
     }
