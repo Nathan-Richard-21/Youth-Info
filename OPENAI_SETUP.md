@@ -11,10 +11,13 @@ Your Youth Portal now uses **OpenAI GPT-4** for intelligent chatbot responses!
 The OpenAI API key is stored in `backend/.env`:
 
 ```env
-OPENAI_API_KEY=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
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-**🔒 Security Note:** Never commit this key to version control!
+**🔒 Security Note:** 
+- Never commit this key to version control!
+- The `.env` file is already in `.gitignore` to prevent accidental commits
+- Keep your API key private and secure
 
 ### Models Used
 
