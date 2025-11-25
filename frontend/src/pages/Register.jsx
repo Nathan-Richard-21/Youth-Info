@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { TextField, Button, Box, Typography } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import api from '../api'
+import GoogleSignIn from '../components/GoogleSignIn'
 
 const Register = () => {
   const [name, setName] = useState('')
@@ -23,15 +24,51 @@ const Register = () => {
   }
 
   return (
-    <Box maxWidth={480} mx="auto">
-      <Typography variant="h5" mb={2}>Register</Typography>
+    <Box maxWidth={480} mx="auto" mt={4} px={2}>
+      <Typography variant="h5" mb={2} textAlign="center">Create Your Account</Typography>
+      
+      <GoogleSignIn mode="signup" />
+      
       <form onSubmit={submit}>
-        <TextField label="Name" value={name} onChange={e=>setName(e.target.value)} fullWidth margin="normal" />
-        <TextField label="Email" value={email} onChange={e=>setEmail(e.target.value)} fullWidth margin="normal" />
-        <TextField label="Password" value={password} onChange={e=>setPassword(e.target.value)} type="password" fullWidth margin="normal" />
-        {err && <Typography color="error">{err}</Typography>}
-        <Button type="submit" variant="contained" sx={{ mt: 2 }}>Register</Button>
+        <TextField 
+          label="Full Name" 
+          value={name} 
+          onChange={e=>setName(e.target.value)} 
+          fullWidth 
+          margin="normal"
+          required
+        />
+        <TextField 
+          label="Email" 
+          value={email} 
+          onChange={e=>setEmail(e.target.value)} 
+          fullWidth 
+          margin="normal"
+          type="email"
+          required
+        />
+        <TextField 
+          label="Password" 
+          value={password} 
+          onChange={e=>setPassword(e.target.value)} 
+          type="password" 
+          fullWidth 
+          margin="normal"
+          required
+        />
+        {err && <Typography color="error" mt={1}>{err}</Typography>}
+        <Button type="submit" variant="contained" sx={{ mt: 2 }} fullWidth>
+          Register
+        </Button>
       </form>
+      <Box mt={2} textAlign="center">
+        <Typography variant="body2">
+          Already have an account?{' '}
+          <Link to="/login" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
+            Sign in here
+          </Link>
+        </Typography>
+      </Box>
     </Box>
   )
 }

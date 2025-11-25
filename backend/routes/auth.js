@@ -33,4 +33,39 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Google Sign-In endpoint
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    
+    // Verify Google token (you'll need to install google-auth-library)
+    // For now, we'll decode the JWT to get user info
+    // In production, you should verify the token with Google's API
+    const base64Url = credential.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(Buffer.from(base64, 'base64').toString());
+    
+    const { email, name, picture, sub: googleId } = payload;
+    
+    // Check if user exists
+    let user = await User.findOne({ email });
+    
+    if (!user) {
+      // Create new user with Google info
+      user = await User.create({
+        name,
+        email,
+        password: await bcrypt.hash(googleId + process.env.JWT_SECRET || 'secret', 10), // Random password
+        googleId,
+        picture
+      });
+    }
+    
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

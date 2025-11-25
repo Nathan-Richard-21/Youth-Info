@@ -6,6 +6,10 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { type: String, enum: ['user','admin'], default: 'user' },
   
+  // Google Sign-In fields
+  googleId: { type: String, sparse: true, unique: true },
+  picture: { type: String },
+  
   // Profile information
   bio: { type: String },
   location: { type: String },
@@ -45,5 +49,6 @@ const UserSchema = new mongoose.Schema({
 // Index for faster queries
 UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
+UserSchema.index({ googleId: 1 });
 
 module.exports = mongoose.model('User', UserSchema);

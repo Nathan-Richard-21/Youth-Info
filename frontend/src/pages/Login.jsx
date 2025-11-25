@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { TextField, Button, Box, Typography } from '@mui/material'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '../api'
+import GoogleSignIn from '../components/GoogleSignIn'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -22,13 +23,33 @@ const Login = () => {
   }
 
   return (
-    <Box maxWidth={480} mx="auto" mt={4}>
-      <Typography variant="h5" mb={2}>Login</Typography>
+    <Box maxWidth={480} mx="auto" mt={4} px={2}>
+      <Typography variant="h5" mb={2} textAlign="center">Login to YouthPortal</Typography>
+      
+      <GoogleSignIn mode="signin" />
+      
       <form onSubmit={submit}>
-        <TextField label="Email" value={email} onChange={e=>setEmail(e.target.value)} fullWidth margin="normal" />
-        <TextField label="Password" value={password} onChange={e=>setPassword(e.target.value)} type="password" fullWidth margin="normal" />
-        {err && <Typography color="error">{err}</Typography>}
-        <Button type="submit" variant="contained" sx={{ mt: 2 }} fullWidth>Login</Button>
+        <TextField 
+          label="Email" 
+          value={email} 
+          onChange={e=>setEmail(e.target.value)} 
+          fullWidth 
+          margin="normal"
+          required
+        />
+        <TextField 
+          label="Password" 
+          value={password} 
+          onChange={e=>setPassword(e.target.value)} 
+          type="password" 
+          fullWidth 
+          margin="normal"
+          required
+        />
+        {err && <Typography color="error" mt={1}>{err}</Typography>}
+        <Button type="submit" variant="contained" sx={{ mt: 2 }} fullWidth>
+          Login
+        </Button>
       </form>
       <Box mt={2} textAlign="center">
         <Typography variant="body2">
