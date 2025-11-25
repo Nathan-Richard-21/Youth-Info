@@ -248,6 +248,48 @@ router.patch('/opportunities/:id', auth, isAdmin, async (req, res) => {
   }
 });
 
+// Approve opportunity
+router.post('/opportunities/:id/approve', auth, isAdmin, async (req, res) => {
+  try {
+    const opportunity = await Opportunity.findByIdAndUpdate(
+      req.params.id,
+      { 
+        status: 'approved',
+        updatedBy: req.user.id 
+      },
+      { new: true }
+    );
+    
+    if (!opportunity) return res.status(404).json({ message: 'Opportunity not found' });
+    
+    res.json({ message: 'Opportunity approved', opportunity });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Reject opportunity
+router.post('/opportunities/:id/reject', auth, isAdmin, async (req, res) => {
+  try {
+    const { rejectionReason } = req.body;
+    const opportunity = await Opportunity.findByIdAndUpdate(
+      req.params.id,
+      { 
+        status: 'rejected',
+        rejectionReason: rejectionReason || 'No reason provided',
+        updatedBy: req.user.id 
+      },
+      { new: true }
+    );
+    
+    if (!opportunity) return res.status(404).json({ message: 'Opportunity not found' });
+    
+    res.json({ message: 'Opportunity rejected', opportunity });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.delete('/opportunities/:id', auth, isAdmin, async (req, res) => {
   try {
     const opportunity = await Opportunity.findByIdAndDelete(req.params.id);

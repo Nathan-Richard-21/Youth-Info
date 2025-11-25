@@ -15,6 +15,7 @@ const OppSchema = new mongoose.Schema({
   contactEmail: { type: String },
   contactPhone: { type: String },
   website: { type: String },
+  applyUrl: { type: String }, // External application URL
   
   // Location and eligibility
   location: { type: String },
@@ -23,6 +24,7 @@ const OppSchema = new mongoose.Schema({
   
   // Dates
   deadline: { type: Date },
+  closingDate: { type: Date, required: true }, // When opportunity closes/expires
   startDate: { type: Date },
   endDate: { type: Date },
   

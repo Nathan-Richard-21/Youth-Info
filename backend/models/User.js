@@ -4,11 +4,15 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['user','admin'], default: 'user' },
+  role: { type: String, enum: ['user','admin','stakeholder'], default: 'user' },
   
   // Google Sign-In fields
   googleId: { type: String, sparse: true, unique: true },
   picture: { type: String },
+  
+  // Password reset
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
   
   // Profile information
   bio: { type: String },

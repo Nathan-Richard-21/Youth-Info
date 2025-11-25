@@ -19,7 +19,14 @@ router.get('/', async (req, res) => {
       sortOrder = 'desc'
     } = req.query;
     
-    const filter = { status: 'approved' };
+    const filter = { 
+      status: 'approved',
+      // Only show opportunities that haven't expired
+      $or: [
+        { closingDate: { $gte: new Date() } },
+        { closingDate: { $exists: false } }
+      ]
+    };
     
     if (category && category !== 'all') {
       filter.category = category;
