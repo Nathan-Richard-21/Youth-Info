@@ -66,12 +66,82 @@ const findAnswer = (userMessage) => {
   return null
 }
 
+// Course recommendation system
+const getCourseQuestions = () => {
+  return [
+    'What is the highest grade or qualification you have so far? (e.g., Grade 12, National Certificate, Diploma, or Other)',
+    'Which subjects or topics do you enjoy or feel strongest in? (e.g., Math, Science, Languages, Business, Art, Tech)',
+    'What kind of work sounds more appealing to you? (e.g., Working with people, Working with computers, Working with tools/hands-on, or Creative work)',
+    'Do you prefer a shorter course (6–12 months) or a longer one (2–4 years)?',
+    'Do you need low-cost or free options, or can you pay some fees?',
+    'Which town or province are you in, or where would you like to study?'
+  ]
+}
+
+const generateCourseRecommendations = (profile) => {
+  const { grade, subjects, workType, duration, budget, location } = profile
+  const recommendations = []
+  
+  // Analyze profile and suggest courses
+  if (subjects?.toLowerCase().includes('math') || subjects?.toLowerCase().includes('science')) {
+    recommendations.push({
+      type: 'Engineering & Technology',
+      courses: ['Mechanical Engineering', 'Electrical Engineering', 'Civil Engineering', 'Software Development', 'Data Science'],
+      colleges: ['Eastern Cape TVET Colleges', 'Mthatha Technical College', 'PE Technical College']
+    })
+  }
+  
+  if (workType?.toLowerCase().includes('people')) {
+    recommendations.push({
+      type: 'Healthcare & Social Services',
+      courses: ['Nursing (RN/EN)', 'Social Work', 'Psychology', 'Community Development', 'Teaching'],
+      colleges: ['Eastern Cape TVET Colleges (Health programs)', 'Walter Sisulu University', 'Nelson Mandela University']
+    })
+  }
+  
+  if (workType?.toLowerCase().includes('computer')) {
+    recommendations.push({
+      type: 'Information Technology',
+      courses: ['IT Support', 'Web Development', 'Cyber Security', 'Database Administration', 'System Administration'],
+      colleges: ['Eastern Cape TVET Colleges', 'Online Courses (Coursera, Udacity)', 'DSD IT Academy']
+    })
+  }
+  
+  if (workType?.toLowerCase().includes('tool') || workType?.toLowerCase().includes('hand')) {
+    recommendations.push({
+      type: 'Trades & Crafts',
+      courses: ['Plumbing', 'Electrical Installation', 'Welding', 'Construction', 'Automotive'],
+      colleges: ['Eastern Cape TVET Colleges', 'Artisan Development Centers']
+    })
+  }
+  
+  if (workType?.toLowerCase().includes('creative')) {
+    recommendations.push({
+      type: 'Creative Fields',
+      courses: ['Graphic Design', 'Video Production', 'Music Production', 'Fashion Design', 'Digital Marketing'],
+      colleges: ['Eastern Cape TVET Colleges', 'Midrand Graduate Institute', 'Online Platforms (YouTube, LinkedIn Learning)']
+    })
+  }
+  
+  if (!recommendations.length) {
+    recommendations.push({
+      type: 'General Education & Business',
+      courses: ['Business Administration', 'Office Administration', 'Project Management', 'Marketing', 'Human Resources'],
+      colleges: ['Eastern Cape TVET Colleges', 'Business Colleges']
+    })
+  }
+  
+  return recommendations
+}
+
 const MedicalChat = () => {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([
-    { from: 'bot', text: 'Welcome to Eastern Cape Youth Health Chatbot! 🏥\n\nI can help with:\n\n• Emergency contacts\n• HIV & TB information\n• Pregnancy & reproductive health\n• Mental health support\n• Substance abuse help\n• Vaccinations\n• Finding clinics & hospitals\n• Health rights & abuse support\n\nWhat would you like to know about?' }
+    { from: 'bot', text: 'Welcome to Eastern Cape Youth Health Chatbot! 🏥\n\nI can help with:\n\n• Emergency contacts\n• HIV & TB information\n• Pregnancy & reproductive health\n• Mental health support\n• Substance abuse help\n• Vaccinations\n• Finding clinics & hospitals\n• Health rights & abuse support\n• Course guidance & career help\n\nWhat would you like to know about?' }
   ])
   const [loading, setLoading] = useState(false)
+  const [courseFlow, setCourseFlow] = useState(null) // Track course guidance flow
+  const [userProfile, setUserProfile] = useState({}) // Store user's course profile info
   const messagesEndRef = useRef(null)
 
   const quickTopics = [
@@ -80,7 +150,8 @@ const MedicalChat = () => {
     'Contraception', 
     'Mental health',
     'Find a clinic', 
-    'My health rights'
+    'My health rights',
+    'What courses should I apply to?'
   ]
 
   useEffect(() => {
@@ -95,21 +166,64 @@ const MedicalChat = () => {
     setLoading(true)
     
     try {
-      // Try to find answer from local knowledge base first
-      const localAnswer = findAnswer(text)
-      if (localAnswer) {
-        const botMsg = { from: 'bot', text: localAnswer }
-        setMessages(prev => [...prev, botMsg])
-      } else {
-        // Fall back to API if no local answer found
-        const res = await api.post('/chat', { message: text })
-        const botMsg = { from: 'bot', text: res.data.reply }
-        setMessages(prev => [...prev, botMsg])
+      // Check if user is asking about courses
+      if (text.toLowerCase().includes('course') || text.toLowerCase().includes('what should i apply') || text.toLowerCase().includes('what course')) {
+        // Start course guidance flow
+        if (!courseFlow) {
+          setCourseFlow(0)
+          const botMsg = { from: 'bot', text: 'Good question! Let\'s figure out what fits you. I\'ll ask a few quick questions about your subjects, interests, and goals, then I\'ll suggest courses you can look at and where to apply.\n\n' + getCourseQuestions()[0] }
+          setMessages(prev => [...prev, botMsg])
+        }
+      } 
+      // If in course flow, collect answers
+      else if (courseFlow !== null && courseFlow < getCourseQuestions().length) {
+        const questionIndex = courseFlow
+        const answers = ['grade', 'subjects', 'workType', 'duration', 'budget', 'location']
+        
+        setUserProfile(prev => ({
+          ...prev,
+          [answers[questionIndex]]: text
+        }))
+        
+        if (courseFlow < getCourseQuestions().length - 1) {
+          // Ask next question
+          setCourseFlow(courseFlow + 1)
+          const nextQuestion = getCourseQuestions()[courseFlow + 1]
+          const botMsg = { from: 'bot', text: nextQuestion }
+          setMessages(prev => [...prev, botMsg])
+        } else {
+          // Generate recommendations
+          setCourseFlow(null)
+          const recommendations = generateCourseRecommendations(userProfile)
+          const recommendationText = `Based on what you shared, here are some course types to explore:\n\n${recommendations.map((rec, idx) => 
+            `${idx + 1}. **${rec.type}**\n   Courses: ${rec.courses.join(', ')}\n   Available at: ${rec.colleges.join(', ')}`
+          ).join('\n\n')}\n\n📚 **Next Steps:**\n• Visit our **Bursaries page** for funding options\n• Check **Learnerships page** for paid training programs\n• Browse **Opportunities page** for job placements\n• Use our **Resume Builder** to create your CV\n\nWould you like more info on any of these courses?`
+          
+          const botMsg = { from: 'bot', text: recommendationText }
+          setMessages(prev => [...prev, botMsg])
+        }
+      }
+      // Regular health questions
+      else {
+        const localAnswer = findAnswer(text)
+        if (localAnswer) {
+          const botMsg = { from: 'bot', text: localAnswer }
+          setMessages(prev => [...prev, botMsg])
+        } else {
+          // Fall back to API if no local answer found
+          try {
+            const res = await api.post('/chat', { message: text })
+            const botMsg = { from: 'bot', text: res.data.reply }
+            setMessages(prev => [...prev, botMsg])
+          } catch (apiErr) {
+            const botMsg = { from: 'bot', text: 'Sorry, I don\'t have information about that. Please try another question or visit your local clinic for personalized advice.' }
+            setMessages(prev => [...prev, botMsg])
+          }
+        }
       }
     } catch (err) {
-      // Use local answer if API fails
       const localAnswer = findAnswer(text)
-      const botMsg = { from: 'bot', text: localAnswer || 'Sorry, I don\'t have information about that. Please try another question or visit your local clinic for personalized advice.' }
+      const botMsg = { from: 'bot', text: localAnswer || 'Sorry, something went wrong. Please try again.' }
       setMessages(prev => [...prev, botMsg])
     } finally {
       setLoading(false)
