@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { findAnswer, getPageKey } from '../constants/chatbotData';
+import { generateSmartResponse, conversationState } from '../constants/smartChatbot';
 import './ChatbotWidget.css';
 
 const ChatbotWidget = () => {
@@ -12,9 +12,6 @@ const ChatbotWidget = () => {
   const messagesEndRef = useRef(null);
   const location = useLocation();
   const { language } = useLanguage();
-
-  // Get current page for context-aware responses
-  const currentPage = getPageKey(location.pathname);
 
   // Scroll to bottom when messages change
   const scrollToBottom = () => {
@@ -28,10 +25,9 @@ const ChatbotWidget = () => {
   // Initialize with welcome message
   useEffect(() => {
     if (messages.length === 0) {
-      const pageName = currentPage.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       const welcomeMessage = language === 'xh'
-        ? `Molo! 👋 Wamkelekile kwiYouth Portal${currentPage !== 'home' ? ` - Iphepha le${pageName}` : ''}.\n\nNdingakunceda njani namhlanje? Ungandibuza:\n• Malunga neli phepha\n• Indlela yokufaka izicelo\n• Ulwazi nge-CVs\n• Iibursaries kunye nemisebenzi\n• Nantoni na enxulumene neportal!`
-        : `Hello! 👋 Welcome to the Youth Portal${currentPage !== 'home' ? ` - ${pageName} Page` : ''}.\n\nHow can I help you today? You can ask me:\n• About this page\n• How to apply for opportunities\n• CV and resume tips\n• Bursaries and jobs info\n• Anything about the portal!`;
+        ? `Molo! 👋 Wamkelekile kwiYouth Portal.\n\nNdingakunceda njani namhlanje? Ungandibuza:\n🎓 Iikosi kunye noqeqesho\n🚀 Ukuqalisa ishishini\n💰 Inkxaso-mali (NSFAS)\n💼 Imisebenzi\n🏥 Impilo\n📄 I-CV uncedo`
+        : `Hello! 👋 Welcome to the Youth Portal.\n\nHow can I help you today? You can ask me about:\n🎓 Courses and training\n🚀 Starting a business\n💰 Funding (NSFAS, bursaries)\n💼 Jobs and careers\n🏥 Health and wellbeing\n📄 CV and application help\n\nJust ask me anything!`;
       
       setMessages([{
         type: 'bot',
@@ -54,19 +50,29 @@ const ChatbotWidget = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const userInput = inputValue;
     setInputValue('');
     setIsTyping(true);
 
     // Simulate thinking time
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Get bot response
-    const botResponse = findAnswer(inputValue, language, currentPage);
+    // Get current page from location
+    const currentPage = location.pathname.replace('/', '') || 'home';
+    
+    // Get smart bot response with page context
+    const result = generateSmartResponse(userInput, currentPage);
+    
+    // Add conversation to history
+    conversationState.addToHistory(userInput, result.response);
     
     const botMessage = {
       type: 'bot',
-      text: botResponse,
-      timestamp: new Date()
+      text: result.response,
+      timestamp: new Date(),
+      flow: result.flow,
+      step: result.step,
+      isPageInfo: result.isPageInfo // Flag if it's page-specific info
     };
 
     setIsTyping(false);
@@ -83,6 +89,9 @@ const ChatbotWidget = () => {
 
   // Quick action buttons based on current page and language
   const getQuickActions = () => {
+    // Get current page from location
+    const currentPage = location.pathname.replace('/', '') || 'home';
+    
     const pageSpecific = {
       home: {
         en: ['Help me get started', 'What opportunities are available?', 'How do I create a CV?', 'Tell me about bursaries'],

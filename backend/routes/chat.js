@@ -1,8 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { auth } = require('../utils/authMiddleware');
+const OpenAI = require('openai');
 
-// GPT-powered career chatbot
+// Initialize OpenAI with API key from environment
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// GPT-powered career chatbot using OpenAI GPT-4
 router.post('/gpt', auth, async (req, res) => {
   try {
     const { message, history = [] } = req.body;
@@ -11,12 +17,82 @@ router.post('/gpt', auth, async (req, res) => {
       return res.status(400).json({ message: 'Message is required' });
     }
 
-    // Generate helpful response (mock for now, can integrate OpenAI later)
-    const response = generateCareerResponse(message);
-    return res.json({ message: response });
+    console.log('🤖 GPT Chat request from:', req.user.name);
+    console.log('📝 Message:', message);
+
+    // Check if API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY not configured');
+      // Fallback to mock responses
+      const response = generateCareerResponse(message);
+      return res.json({ message: response });
+    }
+
+    // Build conversation history
+    const messages = [
+      {
+        role: 'system',
+        content: `You are a helpful career advisor assistant for South African youth in the Eastern Cape. 
+Your role is to provide guidance on:
+- Bursaries and scholarships
+- Career opportunities and job hunting
+- Learnerships and training programs
+- Business funding and entrepreneurship
+- CV writing and interview preparation
+- Education and skills development
+
+Be friendly, encouraging, and provide specific, actionable advice relevant to South African youth. 
+Keep responses concise (2-3 paragraphs max) and include practical steps when possible.`
+      }
+    ];
+
+    // Add conversation history
+    history.forEach(msg => {
+      messages.push({
+        role: msg.role || 'user',
+        content: msg.content || msg.message
+      });
+    });
+
+    // Add current message
+    messages.push({
+      role: 'user',
+      content: message
+    });
+
+    console.log('🚀 Calling OpenAI API with GPT-4...');
+
+    // Call OpenAI API with GPT-4 (or fallback to GPT-3.5-turbo if GPT-4 not available)
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4', // Using GPT-4 (latest available model)
+      messages: messages,
+      max_tokens: 500,
+      temperature: 0.7,
+    });
+
+    const aiResponse = completion.choices[0].message.content;
+    console.log('✅ OpenAI response received');
+
+    return res.json({ 
+      message: aiResponse,
+      model: completion.model,
+      usage: completion.usage
+    });
+
   } catch (err) {
-    console.error('GPT Chat error:', err);
-    res.status(500).json({ message: 'Sorry, I encountered an error. Please try again.' });
+    console.error('❌ GPT Chat error:', err);
+    
+    // If OpenAI fails, fallback to mock responses
+    if (err.code === 'insufficient_quota' || err.status === 429) {
+      console.log('⚠️ OpenAI quota exceeded, using fallback responses');
+      const response = generateCareerResponse(req.body.message);
+      return res.json({ message: response, fallback: true });
+    }
+
+    res.status(500).json({ 
+      message: 'Sorry, I encountered an error. Please try again.',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 });
 
@@ -108,10 +184,103 @@ I can help with:
 What would you like to know?`;
 }
 
-// Medical info chatbot - interactive Q&A for health topics
+// Medical info chatbot - interactive Q&A for health topics using OpenAI
 router.post('/', async (req, res) => {
-  const { message } = req.body;
-  if (!message) return res.status(400).json({ message: 'No message' });
+  try {
+    const { message, history = [] } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ message: 'No message provided' });
+    }
+
+    console.log('🏥 Medical Chat request');
+    console.log('📝 Message:', message);
+
+    // Check if API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY not configured');
+      // Fallback to rule-based responses
+      return handleMedicalChatFallback(message, res);
+    }
+
+    // Build conversation history for medical chat
+    const messages = [
+      {
+        role: 'system',
+        content: `You are a helpful medical information assistant for South African youth in the Eastern Cape.
+Provide information about:
+- Mental health support and resources
+- HIV/TB information and services
+- Reproductive health and family planning
+- Clinic and hospital locations
+- Substance abuse support
+- Sexual health and STI information
+- Vaccinations and immunizations
+- Emergency contacts
+
+IMPORTANT:
+- Always remind users to consult healthcare professionals for diagnosis
+- Provide South African specific resources and hotlines
+- Be sensitive and non-judgmental
+- Include emergency numbers when relevant
+- Keep responses concise and practical
+- Never provide specific medical diagnoses
+
+Focus on directing youth to appropriate services and resources in South Africa.`
+      }
+    ];
+
+    // Add conversation history
+    history.forEach(msg => {
+      messages.push({
+        role: msg.role || 'user',
+        content: msg.content || msg.message
+      });
+    });
+
+    // Add current message
+    messages.push({
+      role: 'user',
+      content: message
+    });
+
+    console.log('🚀 Calling OpenAI API for medical chat...');
+
+    // Call OpenAI API with GPT-4
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: messages,
+      max_tokens: 500,
+      temperature: 0.7,
+    });
+
+    const aiResponse = completion.choices[0].message.content;
+    console.log('✅ OpenAI medical response received');
+
+    return res.json({ 
+      reply: aiResponse,
+      model: completion.model,
+      usage: completion.usage
+    });
+
+  } catch (err) {
+    console.error('❌ Medical Chat error:', err);
+    
+    // If OpenAI fails, fallback to rule-based responses
+    if (err.code === 'insufficient_quota' || err.status === 429) {
+      console.log('⚠️ OpenAI quota exceeded, using fallback responses');
+      return handleMedicalChatFallback(req.body.message, res);
+    }
+
+    res.status(500).json({ 
+      reply: 'Sorry, I encountered an error. Please try again.',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
+// Fallback function for medical chat when OpenAI is unavailable
+function handleMedicalChatFallback(message, res) {
   const text = message.toLowerCase();
   
   // Mental health resources
@@ -156,6 +325,6 @@ router.post('/', async (req, res) => {
   
   // Default/menu
   return res.json({ reply: 'Welcome to Medical Info Chat! 🏥\n\nI can help with:\n\n• Mental health support\n• HIV & TB information\n• Reproductive health\n• Clinic & hospital info\n• Substance abuse help\n• Sexual health\n• Vaccinations\n• Emergency contacts\n\nWhat would you like to know about?' });
-});
+}
 
 module.exports = router;
