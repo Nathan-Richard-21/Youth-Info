@@ -13,13 +13,15 @@ router.get('/', async (req, res) => {
       location, 
       search, 
       featured,
+      createdBy,
       page = 1, 
       limit = 20,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
     
-    const filter = { 
+    // If createdBy is specified, don't filter by status (user wants to see all their posts)
+    const filter = createdBy ? { createdBy } : { 
       status: 'approved',
       // Only show opportunities that haven't expired
       $or: [
@@ -97,20 +99,25 @@ router.get('/:id', async (req, res) => {
 // Create opportunity (requires auth)
 router.post('/', auth, async (req, res) => {
   try {
+    // Determine status based on user role
+    let status = 'pending'; // Default: pending for approval
+    if (req.user.role === 'admin') {
+      status = 'approved'; // Admins auto-approve their posts
+    }
+    
     const opportunityData = {
       ...req.body,
       createdBy: req.user.id,
-      // Auto-approve in development for testing, otherwise pending
-      status: process.env.NODE_ENV === 'production' ? 'pending' : 'approved'
+      status: status
     };
     
     const opportunity = new Opportunity(opportunityData);
     await opportunity.save();
     
     res.status(201).json({ 
-      message: process.env.NODE_ENV === 'production' 
-        ? 'Opportunity submitted for review' 
-        : 'Opportunity created successfully', 
+      message: status === 'approved' 
+        ? 'Opportunity created successfully' 
+        : 'Opportunity submitted for admin approval', 
       opportunity 
     });
   } catch (err) {
