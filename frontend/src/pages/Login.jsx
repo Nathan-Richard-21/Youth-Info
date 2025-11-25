@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { TextField, Button, Box, Typography } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import api from '../api'
 
 const Login = () => {
@@ -22,14 +22,22 @@ const Login = () => {
   }
 
   return (
-    <Box maxWidth={480} mx="auto">
+    <Box maxWidth={480} mx="auto" mt={4}>
       <Typography variant="h5" mb={2}>Login</Typography>
       <form onSubmit={submit}>
         <TextField label="Email" value={email} onChange={e=>setEmail(e.target.value)} fullWidth margin="normal" />
         <TextField label="Password" value={password} onChange={e=>setPassword(e.target.value)} type="password" fullWidth margin="normal" />
         {err && <Typography color="error">{err}</Typography>}
-        <Button type="submit" variant="contained" sx={{ mt: 2 }}>Login</Button>
+        <Button type="submit" variant="contained" sx={{ mt: 2 }} fullWidth>Login</Button>
       </form>
+      <Box mt={2} textAlign="center">
+        <Typography variant="body2">
+          Don't have an account?{' '}
+          <Link to="/register" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
+            Sign up here
+          </Link>
+        </Typography>
+      </Box>
     </Box>
   )
 }
