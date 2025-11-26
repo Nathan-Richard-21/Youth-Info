@@ -39,7 +39,8 @@ const NavBar = () => {
     { label: content.nav.medicalChat, path: '/medical-chat' },
     { label: content.nav.successStories, path: '/success-stories' },
     { label: content.nav.events, path: '/events' },
-    { label: content.nav.forums, path: '/forums' }
+    { label: content.nav.forums, path: '/forums' },
+    { label: language === 'en' ? 'Terms & Privacy' : 'Imiqathango Nobumfihlo', path: '/terms-and-privacy' }
   ]
 
   return (

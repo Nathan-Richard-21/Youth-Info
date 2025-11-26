@@ -30,6 +30,7 @@ import StakeholderDashboard from './pages/StakeholderDashboard';
 import StakeholderSignup from './pages/StakeholderSignup';
 import StakeholderPostJob from './pages/StakeholderPostJob';
 import Opportunities from './pages/Opportunities'
+import TermsAndPrivacy from './pages/TermsAndPrivacy'
 
 const theme = createTheme({
   palette: {
@@ -84,6 +85,7 @@ const App = () => {
               <Route path="/stakeholder" element={<StakeholderDashboard />} />
               <Route path="/stakeholder-dashboard" element={<StakeholderDashboard />} />
               <Route path="/stakeholder/post-job" element={<StakeholderPostJob />} />
+              <Route path="/terms-and-privacy" element={<TermsAndPrivacy />} />
             </Routes>
           </main>
           <Footer />
