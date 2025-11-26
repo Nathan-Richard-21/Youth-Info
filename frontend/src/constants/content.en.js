@@ -280,5 +280,103 @@ export const SITE_CONTENT = {
     title: 'Your Profile',
     bio: 'Bio',
     updateBtn: 'Save'
+  },
+
+  // FAQ Page
+  faq: {
+    title: 'Frequently Asked Questions',
+    subtitle: 'Got questions? We\'ve got answers! Find everything you need to know about using the YouthPortal EC platform.',
+    searchPlaceholder: 'Search FAQs... (e.g., \'How do I create profile?\', \'Is it free?\')',
+    allQuestions: 'All Your Questions Answered',
+    noResults: 'No FAQs match your search. Try different keywords or browse all categories.',
+    
+    // Contact Form
+    contactTitle: 'Still Have Questions?',
+    contactSubtitle: 'Can\'t find what you\'re looking for? Send us a message and we\'ll get back to you within 24 hours!',
+    contactName: 'Your Name',
+    contactEmail: 'Email Address',
+    contactPhone: 'Phone Number (Optional)',
+    contactSubject: 'Subject (Optional)',
+    contactMessage: 'Your Message',
+    contactPlaceholder: 'Tell us how we can help you...',
+    sending: 'Sending...',
+    sendMessage: 'Send Message',
+    successMessage: 'Message sent successfully!',
+    successSubMessage: 'We\'ll respond within 24 hours.',
+    errorMessage: 'Failed to send message. Please try again or email us directly at support@youthportal.ec',
+    requiredFields: 'Please fill in all required fields',
+    invalidEmail: 'Please enter a valid email address',
+    
+    // Quick Contact
+    quickContact: 'Quick Contact',
+    quickEmail: 'Email: support@youthportal.ec',
+    quickPhone: 'Phone: 043 XXX XXXX',
+    quickHours: 'Hours: Mon-Fri, 8AM-5PM (SAST)',
+    
+    // Help Cards
+    helpTitle: 'Need More Help?',
+    aiAssistantTitle: 'AI Career Assistant',
+    aiAssistantDesc: 'Get instant answers 24/7 from our AI assistant on your Profile page',
+    aiAssistantBtn: 'Try AI Assistant',
+    knowledgeBaseTitle: 'Knowledge Base',
+    knowledgeBaseDesc: 'Browse guides, tutorials, and tips for making the most of the portal',
+    knowledgeBaseBtn: 'Browse Guides',
+    communityTitle: 'Community Forums',
+    communityDesc: 'Connect with other youth and share experiences in our forums',
+    communityBtn: 'Join Discussion',
+    
+    // FAQ Questions & Answers
+    questions: [
+      {
+        question: 'What can I find on this portal?',
+        answer: 'You\'ll find verified opportunities for bursaries, scholarships, internships, jobs, training programmes, and mentorship, all tailored for South African youth. We bring together everything you need to grow your career, education, and skills in one place.',
+        category: 'General'
+      },
+      {
+        question: 'Is this portal free to use?',
+        answer: 'Yes! The portal is 100% free for youth to browse, register, apply, and connect with resources. We believe in empowering South African youth without any cost barriers. You\'ll never be asked to pay for access to opportunities.',
+        category: 'General'
+      },
+      {
+        question: 'How do I create a profile and why does it matter?',
+        answer: 'Click \'Sign Up\' in the top menu and fill in your details. Completing your profile unlocks personalised opportunity matching, saves your progress, and lets AI-powered features give you the best advice. The more complete your profile, the better we can help you find the perfect opportunities!',
+        category: 'Account'
+      },
+      {
+        question: 'Do I need a matric certificate to use this site?',
+        answer: 'No! We have opportunities for all education levels—from no-matric required, to technical and university-graduate programmes. Use filters on the Opportunities page to find the right fit for your current education level. Everyone deserves a chance to grow!',
+        category: 'Eligibility'
+      },
+      {
+        question: 'How does the AI assistant help me?',
+        answer: 'Our AI Career Assistant guides you in finding, applying, and preparing for opportunities. Ask for CV tips, interview practice, eligibility questions, or help with applications—24/7. It\'s like having a personal career advisor in your pocket! Access it from your Profile page.',
+        category: 'Features'
+      },
+      {
+        question: 'Is my personal information safe?',
+        answer: 'Yes. Your data is protected using strong encryption and is never sold. You control your privacy settings, and we comply with South African POPIA privacy laws. We take your security seriously—your trust is our priority.',
+        category: 'Security'
+      },
+      {
+        question: 'Can I apply to multiple opportunities at once?',
+        answer: 'Absolutely! You can save, track, and manage as many applications as you like using your personal dashboard. Keep applying—every application is a step closer to your goals. Track all your progress in one place!',
+        category: 'Applications'
+      },
+      {
+        question: 'I\'m stuck or got rejected. What now?',
+        answer: 'Our portal gives you honest feedback and improvement tips, plus shows new, alternative opportunities that fit your profile. You\'re never alone—ask our AI Career Assistant for advice! Rejection is redirection—learn from it and keep pushing forward.',
+        category: 'Support'
+      },
+      {
+        question: 'How do I know these opportunities are real?',
+        answer: 'Every post is checked for scams/fraud by our team and AI tools. You\'ll see a \'Verified\' badge on trusted listings. If you spot a scam, report it instantly using the Report button. Your safety is our top priority—we\'re vigilant so you can apply with confidence.',
+        category: 'Safety'
+      },
+      {
+        question: 'What if I don\'t have consistent internet or a smartphone?',
+        answer: 'The portal is data-light, mobile-friendly, and you can access basic features on any device. We\'re working to add WhatsApp and SMS integration soon. We understand the challenges—that\'s why we\'ve designed the platform to work even with limited connectivity.',
+        category: 'Access'
+      }
+    ]
   }
 }

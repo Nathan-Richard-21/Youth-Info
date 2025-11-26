@@ -27,88 +27,29 @@ const FAQ = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  const faqData = [
-    {
-      id: 'faq1',
-      question: 'What can I find on this portal?',
-      answer: "You'll find verified opportunities for bursaries, scholarships, internships, jobs, training programmes, and mentorship, all tailored for South African youth. We bring together everything you need to grow your career, education, and skills in one place.",
-      icon: <Search sx={{ color: '#6366f1' }} />,
-      category: 'General',
-      color: '#6366f1'
-    },
-    {
-      id: 'faq2',
-      question: 'Is this portal free to use?',
-      answer: "Yes! The portal is 100% free for youth to browse, register, apply, and connect with resources. We believe in empowering South African youth without any cost barriers. You'll never be asked to pay for access to opportunities.",
-      icon: <CheckCircle sx={{ color: '#10b981' }} />,
-      category: 'General',
-      color: '#10b981'
-    },
-    {
-      id: 'faq3',
-      question: 'How do I create a profile and why does it matter?',
-      answer: "Click 'Sign Up' in the top menu and fill in your details. Completing your profile unlocks personalised opportunity matching, saves your progress, and lets AI-powered features give you the best advice. The more complete your profile, the better we can help you find the perfect opportunities!",
-      icon: <Person sx={{ color: '#f59e0b' }} />,
-      category: 'Account',
-      color: '#f59e0b'
-    },
-    {
-      id: 'faq4',
-      question: 'Do I need a matric certificate to use this site?',
-      answer: "No! We have opportunities for all education levels—from no-matric required, to technical and university-graduate programmes. Use filters on the Opportunities page to find the right fit for your current education level. Everyone deserves a chance to grow!",
-      icon: <School sx={{ color: '#8b5cf6' }} />,
-      category: 'Eligibility',
-      color: '#8b5cf6'
-    },
-    {
-      id: 'faq5',
-      question: 'How does the AI assistant help me?',
-      answer: "Our AI Career Assistant guides you in finding, applying, and preparing for opportunities. Ask for CV tips, interview practice, eligibility questions, or help with applications—24/7. It's like having a personal career advisor in your pocket! Access it from your Profile page.",
-      icon: <Psychology sx={{ color: '#ec4899' }} />,
-      category: 'Features',
-      color: '#ec4899'
-    },
-    {
-      id: 'faq6',
-      question: 'Is my personal information safe?',
-      answer: "Yes. Your data is protected using strong encryption and is never sold. You control your privacy settings, and we comply with South African POPIA privacy laws. We take your security seriously—your trust is our priority.",
-      icon: <Shield sx={{ color: '#ef4444' }} />,
-      category: 'Security',
-      color: '#ef4444'
-    },
-    {
-      id: 'faq7',
-      question: 'Can I apply to multiple opportunities at once?',
-      answer: "Absolutely! You can save, track, and manage as many applications as you like using your personal dashboard. Keep applying—every application is a step closer to your goals. Track all your progress in one place!",
-      icon: <Work sx={{ color: '#06b6d4' }} />,
-      category: 'Applications',
-      color: '#06b6d4'
-    },
-    {
-      id: 'faq8',
-      question: "I'm stuck or got rejected. What now?",
-      answer: "Our portal gives you honest feedback and improvement tips, plus shows new, alternative opportunities that fit your profile. You're never alone—ask our AI Career Assistant for advice! Rejection is redirection—learn from it and keep pushing forward.",
-      icon: <Lightbulb sx={{ color: '#f97316' }} />,
-      category: 'Support',
-      color: '#f97316'
-    },
-    {
-      id: 'faq9',
-      question: 'How do I know these opportunities are real?',
-      answer: "Every post is checked for scams/fraud by our team and AI tools. You'll see a 'Verified' badge on trusted listings. If you spot a scam, report it instantly using the Report button. Your safety is our top priority—we're vigilant so you can apply with confidence.",
-      icon: <Verified sx={{ color: '#14b8a6' }} />,
-      category: 'Safety',
-      color: '#14b8a6'
-    },
-    {
-      id: 'faq10',
-      question: "What if I don't have consistent internet or a smartphone?",
-      answer: "The portal is data-light, mobile-friendly, and you can access basic features on any device. We're working to add WhatsApp and SMS integration soon. We understand the challenges—that's why we've designed the platform to work even with limited connectivity.",
-      icon: <PhoneIcon sx={{ color: '#3b82f6' }} />,
-      category: 'Access',
-      color: '#3b82f6'
-    }
-  ];
+  // Use translated FAQ data from content
+  const faqData = content.faq.questions.map((q, index) => ({
+    id: `faq${index + 1}`,
+    question: q.question,
+    answer: q.answer,
+    icon: [
+      <Search sx={{ color: '#6366f1' }} />,
+      <CheckCircle sx={{ color: '#10b981' }} />,
+      <Person sx={{ color: '#f59e0b' }} />,
+      <School sx={{ color: '#8b5cf6' }} />,
+      <Psychology sx={{ color: '#ec4899' }} />,
+      <Shield sx={{ color: '#ef4444' }} />,
+      <Work sx={{ color: '#06b6d4' }} />,
+      <Lightbulb sx={{ color: '#f97316' }} />,
+      <Verified sx={{ color: '#14b8a6' }} />,
+      <PhoneIcon sx={{ color: '#3b82f6' }} />
+    ][index],
+    category: q.category,
+    color: [
+      '#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
+      '#ef4444', '#06b6d4', '#f97316', '#14b8a6', '#3b82f6'
+    ][index]
+  }));
 
   const categories = [...new Set(faqData.map(faq => faq.category))];
 
@@ -132,13 +73,13 @@ const FAQ = () => {
     
     // Validation
     if (!contactForm.name || !contactForm.email || !contactForm.message) {
-      setSubmitError('Please fill in all required fields');
+      setSubmitError(content.faq.requiredFields);
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(contactForm.email)) {
-      setSubmitError('Please enter a valid email address');
+      setSubmitError(content.faq.invalidEmail);
       return;
     }
 
@@ -163,7 +104,7 @@ const FAQ = () => {
       // Reset success message after 5 seconds
       setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (error) {
-      setSubmitError('Failed to send message. Please try again or email us directly at support@youthportal.ec');
+      setSubmitError(content.faq.errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -203,10 +144,10 @@ const FAQ = () => {
                 backgroundClip: 'text'
               }}
             >
-              Frequently Asked Questions
+              {content.faq.title}
             </Typography>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: 700, mx: 'auto' }}>
-              Got questions? We've got answers! Find everything you need to know about using the YouthPortal EC platform.
+              {content.faq.subtitle}
             </Typography>
 
             {/* Search Bar */}
@@ -221,7 +162,7 @@ const FAQ = () => {
             >
               <TextField
                 fullWidth
-                placeholder="Search FAQs... (e.g., 'How do I create profile?', 'Is it free?')"
+                placeholder={content.faq.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
@@ -274,12 +215,12 @@ const FAQ = () => {
             <Fade in={true} timeout={1000}>
               <Box>
                 <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-                  📚 All Your Questions Answered
+                  📚 {content.faq.allQuestions}
                 </Typography>
 
                 {filteredFAQs.length === 0 ? (
                   <Alert severity="info" sx={{ borderRadius: 3 }}>
-                    No FAQs match your search. Try different keywords or browse all categories.
+                    {content.faq.noResults}
                   </Alert>
                 ) : (
                   filteredFAQs.map((faq, index) => (
@@ -393,10 +334,10 @@ const FAQ = () => {
                 </Box>
 
                 <Typography variant="h5" fontWeight={700} gutterBottom>
-                  Still Have Questions?
+                  {content.faq.contactTitle}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  Can't find what you're looking for? Send us a message and we'll get back to you within 24 hours!
+                  {content.faq.contactSubtitle}
                 </Typography>
 
                 <Divider sx={{ mb: 3 }} />
@@ -408,9 +349,9 @@ const FAQ = () => {
                       icon={<CheckCircle />}
                       sx={{ mb: 3, borderRadius: 2 }}
                     >
-                      <strong>Message sent successfully!</strong>
+                      <strong>{content.faq.successMessage}</strong>
                       <br />
-                      We'll respond within 24 hours.
+                      {content.faq.successSubMessage}
                     </Alert>
                   </Zoom>
                 )}
@@ -425,7 +366,7 @@ const FAQ = () => {
                   <TextField
                     fullWidth
                     required
-                    label="Your Name"
+                    label={content.faq.contactName}
                     value={contactForm.name}
                     onChange={(e) => handleContactChange('name', e.target.value)}
                     InputProps={{
@@ -442,7 +383,7 @@ const FAQ = () => {
                     fullWidth
                     required
                     type="email"
-                    label="Email Address"
+                    label={content.faq.contactEmail}
                     value={contactForm.email}
                     onChange={(e) => handleContactChange('email', e.target.value)}
                     InputProps={{
@@ -457,7 +398,7 @@ const FAQ = () => {
 
                   <TextField
                     fullWidth
-                    label="Phone Number (Optional)"
+                    label={content.faq.contactPhone}
                     value={contactForm.phone}
                     onChange={(e) => handleContactChange('phone', e.target.value)}
                     InputProps={{
@@ -472,7 +413,7 @@ const FAQ = () => {
 
                   <TextField
                     fullWidth
-                    label="Subject (Optional)"
+                    label={content.faq.contactSubject}
                     value={contactForm.subject}
                     onChange={(e) => handleContactChange('subject', e.target.value)}
                     sx={{ mb: 2 }}
@@ -483,8 +424,8 @@ const FAQ = () => {
                     required
                     multiline
                     rows={4}
-                    label="Your Message"
-                    placeholder="Tell us how we can help you..."
+                    label={content.faq.contactMessage}
+                    placeholder={content.faq.contactPlaceholder}
                     value={contactForm.message}
                     onChange={(e) => handleContactChange('message', e.target.value)}
                     sx={{ mb: 3 }}
@@ -513,23 +454,23 @@ const FAQ = () => {
                       transition: 'all 0.3s ease'
                     }}
                   >
-                    {submitting ? 'Sending...' : 'Send Message'}
+                    {submitting ? content.faq.sending : content.faq.sendMessage}
                   </Button>
                 </form>
 
                 {/* Quick Contact Info */}
                 <Box sx={{ mt: 4, pt: 3, borderTop: '2px solid #e5e7eb' }}>
                   <Typography variant="body2" fontWeight={600} gutterBottom>
-                    📞 Quick Contact
+                    📞 {content.faq.quickContact}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    Email: support@youthportal.ec
+                    {content.faq.quickEmail}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    Phone: 043 XXX XXXX
+                    {content.faq.quickPhone}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Hours: Mon-Fri, 8AM-5PM (SAST)
+                    {content.faq.quickHours}
                   </Typography>
                 </Box>
               </Paper>
@@ -540,7 +481,7 @@ const FAQ = () => {
         {/* Help Cards */}
         <Box sx={{ mt: 6 }}>
           <Typography variant="h5" fontWeight={700} textAlign="center" gutterBottom sx={{ mb: 4 }}>
-            🚀 Need More Help?
+            🚀 {content.faq.helpTitle}
           </Typography>
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
@@ -562,10 +503,10 @@ const FAQ = () => {
                 >
                   <Psychology sx={{ fontSize: 50, mb: 2 }} />
                   <Typography variant="h6" fontWeight={700} gutterBottom>
-                    AI Career Assistant
+                    {content.faq.aiAssistantTitle}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9, mb: 2 }}>
-                    Get instant answers 24/7 from our AI assistant on your Profile page
+                    {content.faq.aiAssistantDesc}
                   </Typography>
                   <Button
                     variant="contained"
@@ -576,7 +517,7 @@ const FAQ = () => {
                     }}
                     href="/profile"
                   >
-                    Try AI Assistant
+                    {content.faq.aiAssistantBtn}
                   </Button>
                 </Card>
               </Zoom>
@@ -601,10 +542,10 @@ const FAQ = () => {
                 >
                   <Help sx={{ fontSize: 50, mb: 2 }} />
                   <Typography variant="h6" fontWeight={700} gutterBottom>
-                    Knowledge Base
+                    {content.faq.knowledgeBaseTitle}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9, mb: 2 }}>
-                    Browse guides, tutorials, and tips for making the most of the portal
+                    {content.faq.knowledgeBaseDesc}
                   </Typography>
                   <Button
                     variant="contained"
@@ -615,7 +556,7 @@ const FAQ = () => {
                     }}
                     href="/knowledge-base"
                   >
-                    Browse Guides
+                    {content.faq.knowledgeBaseBtn}
                   </Button>
                 </Card>
               </Zoom>
@@ -640,10 +581,10 @@ const FAQ = () => {
                 >
                   <Message sx={{ fontSize: 50, mb: 2 }} />
                   <Typography variant="h6" fontWeight={700} gutterBottom>
-                    Community Forums
+                    {content.faq.communityTitle}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9, mb: 2 }}>
-                    Connect with other youth and share experiences in our forums
+                    {content.faq.communityDesc}
                   </Typography>
                   <Button
                     variant="contained"
@@ -654,7 +595,7 @@ const FAQ = () => {
                     }}
                     href="/forums"
                   >
-                    Join Discussion
+                    {content.faq.communityBtn}
                   </Button>
                 </Card>
               </Zoom>

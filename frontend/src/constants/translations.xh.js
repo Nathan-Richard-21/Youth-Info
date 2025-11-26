@@ -221,5 +221,104 @@ export const translations = {
     edit: 'Hlela',
     update: 'Hlaziya',
     search: 'Khangela'
+  },
+
+  // FAQ Page
+  faq: {
+    title: 'Imibuzo Ebuzwa Rhoqo',
+    subtitle: 'Unemibuzo? Sinezimpendulo! Fumana yonke into oyidingayo malunga nokusetyenziswa kweqonga le-YouthPortal EC.',
+    searchPlaceholder: 'Khangela imibuzo... (umz., \'Ndiyenza njani iprofayili?\', \'Iyasimahla?\')',
+    allQuestions: 'Yonke imibuzo yakho iphendulwe',
+    noResults: 'Akukho mibuzo ehambelana nophando lwakho. Zama amagama ahlukileyo okanye ukhangele zonke iindidi.',
+    
+    // Contact Form
+    contactTitle: 'Usenabanye imibuzo?',
+    contactSubtitle: 'Awukwazi ukufumana oko ukufunayo? Sithumelele umyalezo kwaye siya kubuya kuwe kwiiyure ezingama-24!',
+    contactName: 'Igama lakho',
+    contactEmail: 'Idilesi ye-imeyile',
+    contactPhone: 'Inombolo yefowuni (Ayinyanzeli)',
+    contactSubject: 'Umxholo (Awunyanzeli)',
+    contactMessage: 'Umyalezo wakho',
+    contactPlaceholder: 'Sixelele indlela esinokukunceda ngayo...',
+    sending: 'Iyathumela...',
+    sendMessage: 'Thumela umyalezo',
+    successMessage: 'Umyalezo uthunyelwe ngempumelelo!',
+    successSubMessage: 'Siya kuphendula kwiiyure ezingama-24.',
+    errorMessage: 'Akuphumelelanga ukuthumela umyalezo. Nceda uzame kwakhona okanye usithumelele i-imeyile ngqo ku-support@youthportal.ec',
+    requiredFields: 'Nceda uzalise zonke iindawo ezifunekayo',
+    invalidEmail: 'Nceda ufake idilesi ye-imeyile esebenzayo',
+    
+    // Quick Contact
+    quickContact: 'Uqhagamshelwano olukhawulezayo',
+    quickEmail: 'I-imeyile: support@youthportal.ec',
+    quickPhone: 'Ifowuni: 043 XXX XXXX',
+    quickHours: 'Iiyure: Mvulo-Lwesihlanu, 8AM-5PM (SAST)',
+    
+    // Help Cards
+    helpTitle: 'Ufuna uncedo olungakumbi?',
+    aiAssistantTitle: 'Umncedisi we-AI Womsebenzi',
+    aiAssistantDesc: 'Fumana iimpendulo ngoko nangoko 24/7 kumncedisi wethu we-AI kwiphepha lakho leprofayili',
+    aiAssistantBtn: 'Zama umncedisi we-AI',
+    knowledgeBaseTitle: 'Isiseko solwazi',
+    knowledgeBaseDesc: 'Khangela izikhokelo, iindlela zokufundisa, neengcebiso zokwenza okuninzi kweqonga',
+    knowledgeBaseBtn: 'Khangela izikhokelo',
+    communityTitle: 'Iiforum zoluntu',
+    communityDesc: 'Qhagamshelana nolunye ulutsha kwaye wabelane ngamava kwiiforum zethu',
+    communityBtn: 'Joyina ingxoxo',
+    
+    // FAQ Questions & Answers
+    questions: [
+      {
+        question: 'Ndingafumana ntoni kule portal?',
+        answer: 'Uya kufumana amathuba aqinisekisiweyo eebhasi, izibonelelo, ukuqeqeshwa, imisebenzi, iinkqubo zoqeqesho, kunye nokuqeqeshwa, zonke zilungiselelwe ulutsha lwaseMzantsi Afrika. Sidibanisa yonke into oyidingayo ukukhulisa umsebenzi wakho, imfundo, kunye nezakhono kwindawo enye.',
+        category: 'Jikelele'
+      },
+      {
+        question: 'Ingaba le portal iyasimahla ukuyisebenzisa?',
+        answer: 'Ewe! Le portal yasimahla 100% kulutsha ukuze lukhangele, lubhalise, lufake izicelo, kwaye luqhagamshelane nezixhobo. Sikholelwa ekuxhobiseni ulutsha lwaseMzantsi Afrika ngaphandle kwemiqobo yeendleko. Awuzukucelwa ukuba uhlawule ukufikelela kumathuba.',
+        category: 'Jikelele'
+      },
+      {
+        question: 'Ndiyenza njani iprofayili kwaye kutheni ibalulekile?',
+        answer: 'Cofa u-\'Bhalisa\' kwimenyu ephezulu kwaye uzalise iinkcukacha zakho. Ukugqibezela iprofayili yakho kuvula ukutshatiswa kwamathuba okulungiselelwe wena, kugcina inkqubela yakho, kwaye kuvumela iimpawu ezixhaswe yi-AI ukukunika amacebo amahle. Ukuze iprofayili yakho igqibelele, singakunceda ngcono ukufumana amathuba afanelekileyo!',
+        category: 'I-akhawunti'
+      },
+      {
+        question: 'Ngaba ndifuna isatifikethi se-matric ukusebenzisa le sayithi?',
+        answer: 'Hayi! Sinamathuba awo onke amanqanaba emfundo—ukusuka kwingekho matric ifunekayo, ukuya kwiinkqubo zobugcisa kunye neyunivesithi. Sebenzisa izihluzi kwiphepha lamathuba ukufumana okulungileyo kwinqanaba lakho lemfundo langoku. Wonke umntu ufanele ithuba lokukhula!',
+        category: 'Ukufaneleka'
+      },
+      {
+        question: 'Umncedisi we-AI undinceda njani?',
+        answer: 'Umncedisi wethu we-AI womsebenzi ukukhokela ekufumaneni, ekufakeni izicelo, kunye nokulungiselela amathuba. Cela iingcebiso ze-CV, ukuziqhelanisa nodliwano-ndlebe, imibuzo yokufaneleka, okanye uncedo ngezicelo—24/7. Kufana nokuba nomcebisi womsebenzi wobuqu epokothweni lakho! Fikelela kuwo kwiphepha lakho leprofayili.',
+        category: 'Iimpawu'
+      },
+      {
+        question: 'Ngaba ulwazi lwam lobuqu lukhuselekile?',
+        answer: 'Ewe. Idatha yakho ikhuselwe kusetyenziswa ukubethela okunamandla kwaye ayithengiswa. Ulawula izicwangciso zakho zabucala, kwaye sithobela imithetho yabucala yaseMzantsi Afrika ye-POPIA. Sithatha ukhuseleko lwakho ngokuzimisela—ukuthembana kwakho yeyethu eyona nto iphambili.',
+        category: 'Ukhuseleko'
+      },
+      {
+        question: 'Ndingafaka izicelo kumathuba amaninzi ngaxeshanye?',
+        answer: 'Ngokupheleleyo! Ungagcina, ulandele, kwaye ulawule izicelo ezininzi njengoko uthanda usebenzisa ideshibhodi yakho yobuqu. Qhubeka ufaka izicelo—isicelo ngasinye sinyathelo elikufuphi neenjongo zakho. Landela yonke inkqubela yakho kwindawo enye!',
+        category: 'Izicelo'
+      },
+      {
+        question: 'Ndibanjwe okanye ndaliwe. Kwenzeke ntoni ngoku?',
+        answer: 'Iqonga lethu likunika ingxelo enyanisekileyo neengcebiso zokuphucula, kwaye libonisa amathuba amatsha, ahlukileyo alungele iprofayili yakho. Awukho wedwa—cela umncedisi wethu we-AI womsebenzi amacebo! Ukungatshiselwa kukujikisa—funda kuwo kwaye uqhubeke utyhalela phambili.',
+        category: 'Inkxaso'
+      },
+      {
+        question: 'Ndiyazi njani ukuba la mathuba ayinyani?',
+        answer: 'Yonke ipowusta ikhangelelwa ubuqhetseba/ubuhenyu liqela lethu nezixhobo ze-AI. Uya kubona ibheji ethi \'Iqinisekisiwe\' kuluhlu oluthembekileyo. Ukuba ubona ubuqhetseba, kubike ngoko nangoko usebenzisa iqhosha lokubika. Ukhuseleko lwakho lolona hlobo luphambili—silumkile ukuze ukwazi ukufaka izicelo ngokuzithemba.',
+        category: 'Ukhuseleko'
+      },
+      {
+        question: 'Kwenzeka ntoni ukuba andinazo i-intanethi okanye ifowuni ehlakaniphile eqhubekayo?',
+        answer: 'Iqonga lihamba ngedatha encinci, lilungele ifowuni, kwaye ungafikelela kwiimpawu ezisisiseko nakwesiphi na isixhobo. Sisebenza ukongeza ukudityaniswa kwe-WhatsApp kunye ne-SMS kungekudala. Siyaqonda imingeni—yiyo loo nto siyile iqonga ukuze lisebenze nakuba kunoqhagamshelo oluncinane.',
+        category: 'Ukufikelela'
+      }
+    ]
   }
 }
+
