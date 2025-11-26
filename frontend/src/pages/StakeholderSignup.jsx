@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container, Paper, Typography, TextField, Button, Box, Grid,
   MenuItem, Alert, Stepper, Step, StepLabel, LinearProgress,
@@ -38,6 +38,28 @@ const StakeholderSignup = () => {
     role: 'stakeholder'
   });
 
+  // Auto-fill user data if logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        setIsLoggedIn(true);
+        setFormData(prev => ({
+          ...prev,
+          name: userData.name || '',
+          email: userData.email || '',
+          phone: userData.phone || '',
+          location: userData.location || ''
+        }));
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+      }
+    }
+  }, []);
+
   const steps = ['Account Information', 'Company Details', 'Review & Submit'];
 
   const industries = [
@@ -47,11 +69,11 @@ const StakeholderSignup = () => {
   ];
 
   const companySizes = [
-    '1-10 employees',
-    '11-50 employees',
-    '51-200 employees',
-    '201-500 employees',
-    '501+ employees'
+    { value: '1-10', label: '1-10 employees' },
+    { value: '11-50', label: '11-50 employees' },
+    { value: '51-200', label: '51-200 employees' },
+    { value: '201-500', label: '201-500 employees' },
+    { value: '501+', label: '501+ employees' }
   ];
 
   const handleChange = (field, value) => {
@@ -62,6 +84,16 @@ const StakeholderSignup = () => {
   const validateStep = (step) => {
     switch (step) {
       case 0:
+        // Skip password validation if user is already logged in
+        if (isLoggedIn) {
+          if (!formData.name || !formData.email) {
+            setError('Please fill in all required fields');
+            return false;
+          }
+          return true;
+        }
+        
+        // Full validation for new users
         if (!formData.name || !formData.email || !formData.password) {
           setError('Please fill in all required fields');
           return false;
@@ -111,33 +143,63 @@ const StakeholderSignup = () => {
     setError('');
 
     try {
-      // Map form fields to backend expected field names
-      const payload = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        role: 'stakeholder',
-        companyName: formData.companyName,
-        companyDescription: formData.companyDescription,
-        companyIndustry: formData.companyIndustry,
-        companySize: formData.companySize,
-        companyWebsite: formData.companyWebsite,
-        companyPhone: formData.phone, // Map phone to companyPhone
-        companyLocation: formData.location // Map location to companyLocation
-      };
-
-      const response = await api.post('/auth/register', payload);
-
-      setSuccess(true);
+      // Check if user is logged in - if yes, upgrade existing account
+      const token = localStorage.getItem('token');
+      const existingUser = localStorage.getItem('user');
       
-      // Auto-login after registration
-      if (response.data.token && response.data.user) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+      if (token && existingUser) {
+        // Upgrade existing user to stakeholder
+        const payload = {
+          companyName: formData.companyName,
+          companyDescription: formData.companyDescription,
+          companyIndustry: formData.companyIndustry,
+          companySize: formData.companySize,
+          companyWebsite: formData.companyWebsite,
+          phone: formData.phone,
+          location: formData.location
+        };
+
+        const response = await api.post('/auth/upgrade-to-stakeholder', payload);
         
-        setTimeout(() => {
-          window.location.href = '/stakeholder-dashboard'; // Force full page reload
-        }, 2000);
+        setSuccess(true);
+        
+        // Update user in localStorage
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+          
+          setTimeout(() => {
+            window.location.href = '/stakeholder-dashboard';
+          }, 2000);
+        }
+      } else {
+        // New user registration
+        const payload = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: 'stakeholder',
+          companyName: formData.companyName,
+          companyDescription: formData.companyDescription,
+          companyIndustry: formData.companyIndustry,
+          companySize: formData.companySize,
+          companyWebsite: formData.companyWebsite,
+          companyPhone: formData.phone,
+          companyLocation: formData.location
+        };
+
+        const response = await api.post('/auth/register', payload);
+
+        setSuccess(true);
+        
+        // Auto-login after registration
+        if (response.data.token && response.data.user) {
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+          
+          setTimeout(() => {
+            window.location.href = '/stakeholder-dashboard';
+          }, 2000);
+        }
       }
     } catch (err) {
       console.error('Registration error:', err);
@@ -169,6 +231,8 @@ const StakeholderSignup = () => {
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="John Doe"
+                disabled={isLoggedIn}
+                helperText={isLoggedIn ? "Using your account name" : ""}
               />
             </Grid>
 
@@ -181,34 +245,49 @@ const StakeholderSignup = () => {
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
                 placeholder="contact@company.com"
+                disabled={isLoggedIn}
+                helperText={isLoggedIn ? "Using your account email" : ""}
                 InputProps={{
                   startAdornment: <Email sx={{ mr: 1, color: 'text.secondary' }} />
                 }}
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                helperText="Minimum 6 characters"
-              />
-            </Grid>
+            {!isLoggedIn && (
+              <>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => handleChange('password', e.target.value)}
+                    helperText="Minimum 6 characters"
+                  />
+                </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Confirm Password"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={(e) => handleChange('confirmPassword', e.target.value)}
-              />
-            </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Confirm Password"
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                  />
+                </Grid>
+              </>
+            )}
+
+            {isLoggedIn && (
+              <Grid item xs={12}>
+                <Alert severity="info">
+                  You're upgrading your existing account to a Stakeholder account. 
+                  No need to create a new password!
+                </Alert>
+              </Grid>
+            )}
           </Grid>
         );
 
@@ -279,7 +358,7 @@ const StakeholderSignup = () => {
                 onChange={(e) => handleChange('companySize', e.target.value)}
               >
                 {companySizes.map(size => (
-                  <MenuItem key={size} value={size}>{size}</MenuItem>
+                  <MenuItem key={size.value} value={size.value}>{size.label}</MenuItem>
                 ))}
               </TextField>
             </Grid>
@@ -352,7 +431,9 @@ const StakeholderSignup = () => {
                 </Typography>
                 <Typography variant="body2"><strong>Company:</strong> {formData.companyName}</Typography>
                 <Typography variant="body2"><strong>Industry:</strong> {formData.companyIndustry}</Typography>
-                <Typography variant="body2"><strong>Size:</strong> {formData.companySize}</Typography>
+                <Typography variant="body2">
+                  <strong>Size:</strong> {companySizes.find(s => s.value === formData.companySize)?.label || formData.companySize}
+                </Typography>
                 {formData.location && (
                   <Typography variant="body2"><strong>Location:</strong> {formData.location}</Typography>
                 )}
@@ -382,10 +463,12 @@ const StakeholderSignup = () => {
         <Paper elevation={3} sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
           <CheckCircle sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
           <Typography variant="h4" fontWeight={700} gutterBottom>
-            Registration Successful!
+            {isLoggedIn ? 'Account Upgraded!' : 'Registration Successful!'}
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            Welcome to YouthPortal EC! Your stakeholder account has been created.
+            {isLoggedIn 
+              ? 'Your account has been upgraded to Stakeholder status!' 
+              : 'Welcome to YouthPortal EC! Your stakeholder account has been created.'}
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
             Redirecting you to your dashboard...

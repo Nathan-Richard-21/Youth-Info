@@ -86,6 +86,62 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Upgrade existing user to stakeholder
+router.post('/upgrade-to-stakeholder', async (req, res) => {
+  try {
+    // Get user from token
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update user to stakeholder with company details
+    const {
+      companyName,
+      companyDescription,
+      companyIndustry,
+      companySize,
+      companyWebsite,
+      phone,
+      location
+    } = req.body;
+
+    user.role = 'stakeholder';
+    user.companyName = companyName;
+    user.companyDescription = companyDescription;
+    user.companyIndustry = companyIndustry;
+    user.companySize = companySize;
+    user.companyWebsite = companyWebsite;
+    user.phone = phone;
+    user.location = location;
+    user.verificationStatus = 'pending';
+
+    await user.save();
+
+    res.json({
+      message: 'Successfully upgraded to stakeholder',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        companyName: user.companyName,
+        verificationStatus: user.verificationStatus
+      }
+    });
+  } catch (err) {
+    console.error('❌ UPGRADE ERROR:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.post('/login', async (req, res) => {
   try {
     console.log('🔐 LOGIN ATTEMPT:', req.body.email);
