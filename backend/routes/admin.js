@@ -158,6 +158,46 @@ router.patch('/users/:id/role', auth, isAdmin, async (req, res) => {
   }
 });
 
+// Update stakeholder verification status (ADMIN ONLY)
+router.patch('/users/:id/verification', auth, isAdmin, async (req, res) => {
+  try {
+    const { verificationStatus } = req.body;
+    
+    // Validate verification status
+    const validStatuses = ['pending', 'verified', 'rejected'];
+    if (!validStatuses.includes(verificationStatus)) {
+      return res.status(400).json({ 
+        message: 'Invalid verification status. Must be: pending, verified, or rejected' 
+      });
+    }
+    
+    const user = await User.findById(req.params.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Only allow verification for stakeholders
+    if (user.role !== 'stakeholder') {
+      return res.status(400).json({ 
+        message: 'Verification status can only be set for stakeholder accounts' 
+      });
+    }
+    
+    user.verificationStatus = verificationStatus;
+    await user.save();
+    
+    console.log(`✅ Stakeholder verification updated: ${user.email} → ${verificationStatus} (by ${req.user.email})`);
+    
+    res.json({ 
+      message: `Stakeholder ${verificationStatus === 'verified' ? 'approved' : verificationStatus === 'rejected' ? 'rejected' : 'status updated'}`, 
+      user 
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.delete('/users/:id', auth, isAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

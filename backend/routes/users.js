@@ -148,4 +148,73 @@ router.delete('/me', auth, async (req, res) => {
   }
 });
 
+// Upload CV
+router.post('/upload-cv', auth, async (req, res) => {
+  try {
+    if (!req.files || !req.files.cv) {
+      return res.status(400).json({ message: 'No CV file uploaded' });
+    }
+
+    const cvFile = req.files.cv;
+    
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/msword', 
+                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(cvFile.mimetype)) {
+      return res.status(400).json({ message: 'Only PDF and Word documents are allowed' });
+    }
+
+    // Validate file size (5MB max)
+    if (cvFile.size > 5 * 1024 * 1024) {
+      return res.status(400).json({ message: 'File size must be less than 5MB' });
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const fileName = `cv_${req.user.id}_${timestamp}_${cvFile.name}`;
+    const uploadPath = `./uploads/cvs/${fileName}`;
+
+    // Move file to uploads folder
+    await cvFile.mv(uploadPath);
+
+    // Update user record
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        cvUrl: `/uploads/cvs/${fileName}`,
+        cvFileName: cvFile.name,
+        cvUploadedAt: new Date()
+      },
+      { new: true }
+    ).select('-password');
+
+    res.json({
+      message: 'CV uploaded successfully',
+      cvUrl: user.cvUrl,
+      cvFileName: user.cvFileName,
+      cvUploadedAt: user.cvUploadedAt
+    });
+  } catch (err) {
+    console.error('CV upload error:', err);
+    res.status(500).json({ message: 'Failed to upload CV' });
+  }
+});
+
+// Delete CV
+router.delete('/delete-cv', auth, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        $unset: { cvUrl: '', cvFileName: '', cvUploadedAt: '' }
+      },
+      { new: true }
+    ).select('-password');
+
+    res.json({ message: 'CV deleted successfully', user });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete CV' });
+  }
+});
+
 module.exports = router;

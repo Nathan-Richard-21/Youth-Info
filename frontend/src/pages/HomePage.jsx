@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Container, Typography, Button, Grid, Card, CardContent, CardActions, Chip, Paper } from '@mui/material'
+import { Box, Container, Typography, Button, Grid, Card, CardContent, CardActions, Chip, Paper, Fade, Zoom } from '@mui/material'
 import { Link } from 'react-router-dom'
 import SchoolIcon from '@mui/icons-material/School'
 import WorkIcon from '@mui/icons-material/Work'
@@ -9,6 +9,10 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import ForumIcon from '@mui/icons-material/Forum'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import BusinessIcon from '@mui/icons-material/Business';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import GroupsIcon from '@mui/icons-material/Groups';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useLanguage } from '../context/LanguageContext'
 
 const HomePage = () => {
@@ -77,6 +81,129 @@ const HomePage = () => {
           </Grid>
         </Paper>
       </Container>
+
+      {/* Stakeholder CTA Section - NEW */}
+      <Container maxWidth="lg" sx={{ my: 8 }}>
+        <Zoom in={true} style={{ transitionDelay: '300ms' }}>
+          <Paper 
+            elevation={8}
+            sx={{ 
+              p: 6, 
+              borderRadius: 4,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                transition: 'transform 0.3s ease',
+                boxShadow: '0 20px 60px rgba(102, 126, 234, 0.4)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            {/* Animated Background Circles */}
+            <Box sx={{ 
+              position: 'absolute', 
+              top: -50, 
+              right: -50, 
+              width: 200, 
+              height: 200, 
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+              animation: 'pulse 3s infinite'
+            }} />
+            <Box sx={{ 
+              position: 'absolute', 
+              bottom: -30, 
+              left: -30, 
+              width: 150, 
+              height: 150, 
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+              animation: 'pulse 3s infinite 1s'
+            }} />
+
+            <Grid container spacing={4} alignItems="center" sx={{ position: 'relative', zIndex: 1 }}>
+              <Grid item xs={12} md={8}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <BusinessIcon sx={{ fontSize: 50, mr: 2 }} />
+                  <Box>
+                    <Typography variant="h4" fontWeight={700} gutterBottom>
+                      Are You an Employer?
+                    </Typography>
+                    <Typography variant="h6" sx={{ opacity: 0.95 }}>
+                      Post Jobs & Connect with Talented Youth
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Grid container spacing={2} sx={{ mt: 2 }}>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <RocketLaunchIcon sx={{ mr: 1 }} />
+                      <Typography variant="body2">Post Unlimited Jobs</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <GroupsIcon sx={{ mr: 1 }} />
+                      <Typography variant="body2">Access 8,500+ Youth</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <TrendingUpIcon sx={{ mr: 1 }} />
+                      <Typography variant="body2">Advanced Analytics</Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <Grid item xs={12} md={4} sx={{ textAlign: { xs: 'center', md: 'right' } }}>
+                <Button
+                  component={Link}
+                  to="/stakeholder-signup"
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    bgcolor: 'white',
+                    color: '#667eea',
+                    px: 4,
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 700,
+                    borderRadius: 3,
+                    textTransform: 'none',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                    '&:hover': {
+                      bgcolor: '#f3f4f6',
+                      transform: 'scale(1.05)',
+                      boxShadow: '0 12px 32px rgba(0,0,0,0.3)'
+                    },
+                    transition: 'all 0.3s ease'
+                  }}
+                  startIcon={<BusinessIcon />}
+                >
+                  Join as Stakeholder
+                </Button>
+                <Typography variant="caption" display="block" sx={{ mt: 1, opacity: 0.9 }}>
+                  Free to get started • No credit card required
+                </Typography>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Zoom>
+      </Container>
+
+      <style>
+        {`
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.1; }
+            50% { transform: scale(1.1); opacity: 0.2; }
+          }
+        `}
+      </style>
 
       {/* Categories Grid */}
       <Container maxWidth="lg" sx={{ my: 8 }}>

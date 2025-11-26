@@ -166,10 +166,10 @@ I'm applying for opportunities in the Eastern Cape. Make it passionate and profe
     };
     setMessages(prev => [...prev, userMsg]);
 
-    // Send to AI
+    // Send to AI - USE /chat/gpt for CAREER assistant (not /chat which is medical)
     setLoading(true);
     try {
-      const response = await api.post('/chat', { 
+      const response = await api.post('/chat/gpt', { 
         message: action.prompt,
         context: {
           userName: user?.name,
@@ -182,7 +182,7 @@ I'm applying for opportunities in the Eastern Cape. Make it passionate and profe
 
       const botMsg = {
         type: 'bot',
-        content: response.data.reply,
+        content: response.data.message, // GPT endpoint returns 'message' not 'reply'
         action: action.label,
         timestamp: new Date()
       };
@@ -215,7 +215,7 @@ I'm applying for opportunities in the Eastern Cape. Make it passionate and profe
 
     setLoading(true);
     try {
-      const response = await api.post('/chat', { 
+      const response = await api.post('/chat/gpt', { 
         message: inputMessage,
         context: {
           userName: user?.name,
@@ -228,7 +228,7 @@ I'm applying for opportunities in the Eastern Cape. Make it passionate and profe
 
       const botMsg = {
         type: 'bot',
-        content: response.data.reply,
+        content: response.data.message, // GPT endpoint returns 'message' not 'reply'
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botMsg]);

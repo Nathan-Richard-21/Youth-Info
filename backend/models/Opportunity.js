@@ -17,6 +17,20 @@ const OppSchema = new mongoose.Schema({
   website: { type: String },
   applyUrl: { type: String }, // External application URL
   
+  // Internal Application System (LinkedIn-style)
+  allowInternalApplication: { type: Boolean, default: false },
+  applicationQuestions: [{
+    question: { type: String },
+    type: { type: String, enum: ['text','textarea','choice','file'], default: 'text' },
+    required: { type: Boolean, default: false },
+    options: [{ type: String }] // For choice type
+  }],
+  requiredDocuments: [{
+    name: { type: String }, // e.g., "CV", "Cover Letter", "ID Copy"
+    description: { type: String },
+    required: { type: Boolean, default: true }
+  }],
+  
   // Location and eligibility
   location: { type: String },
   eligibility: { type: String },

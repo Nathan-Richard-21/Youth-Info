@@ -15,6 +15,7 @@ import api from '../api'
 import { useLanguage } from '../context/LanguageContext'
 import { useNavigate } from 'react-router-dom'
 import AICareerAssistant from '../components/AICareerAssistant'
+import CVUploader from '../components/CVUploader'
 
 // 🟢🟢🟢 PROFILENEW.JSX - UPDATED WITH AI CAREER ASSISTANT 🟢🟢🟢
 console.log('🟢🟢🟢 ProfileNew.jsx LOADED - AI Career Assistant Integration 🟢🟢🟢')
@@ -414,6 +415,16 @@ const Profile = () => {
                   multiline
                   rows={4}
                   placeholder="Tell us about yourself, your goals, and interests..."
+                />
+              </Grid>
+              
+              {/* CV Uploader */}
+              <Grid item xs={12}>
+                <CVUploader 
+                  user={user} 
+                  onUploadSuccess={(data) => {
+                    setUser({...user, ...data});
+                  }}
                 />
               </Grid>
             </Grid>

@@ -29,6 +29,21 @@ const UserSchema = new mongoose.Schema({
   skills: [{ type: String }],
   interests: [{ type: String }],
   
+  // CV/Resume Upload
+  cvUrl: { type: String }, // URL to uploaded CV
+  cvFileName: { type: String },
+  cvUploadedAt: { type: Date },
+  
+  // Stakeholder-specific fields
+  companyName: { type: String }, // For stakeholders
+  companyDescription: { type: String },
+  companyWebsite: { type: String },
+  companyIndustry: { type: String },
+  companySize: { type: String, enum: ['1-10','11-50','51-200','201-500','501+'] },
+  companyLogo: { type: String },
+  verificationStatus: { type: String, enum: ['pending','verified','rejected'], default: 'pending' },
+  verificationDocuments: [{ type: String }], // URLs to uploaded documents
+  
   // Preferences
   preferences: {
     emailNotifications: { type: Boolean, default: true },

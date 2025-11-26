@@ -11,7 +11,7 @@ import {
   Search, FilterList, MoreVert, CheckCircle, Cancel, Pending,
   Person, Work, School, Business, Report, Visibility, Delete,
   TrendingUp, Group, Assignment, Flag, Edit, Block, Email,
-  Phone, LocationOn, CalendarToday, Dashboard as DashboardIcon, Add
+  Phone, LocationOn, CalendarToday, Dashboard as DashboardIcon, Add, Tooltip
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import api from '../api'
@@ -35,6 +35,7 @@ const AdminDashboard = () => {
   const [oppStatusFilter, setOppStatusFilter] = useState('all')
   const [oppCategoryFilter, setOppCategoryFilter] = useState('all')
   const [userRoleFilter, setUserRoleFilter] = useState('all')
+  const [verificationFilter, setVerificationFilter] = useState('all')
   
   // Dialog states
   const [selectedItem, setSelectedItem] = useState(null)
@@ -93,7 +94,8 @@ const AdminDashboard = () => {
       setStats({
         totalUsers: usersRes.data?.length || 0,
         totalOpportunities: oppsRes.data?.length || 0,
-        pendingApprovals: oppsRes.data?.filter(o => o.status === 'pending').length || 0,
+        pendingApprovals: (oppsRes.data?.filter(o => o.status === 'pending').length || 0) + 
+                         (usersRes.data?.filter(u => u.role === 'stakeholder' && u.verificationStatus === 'pending').length || 0),
         activeReports: 2 // Mock value
       })
       
@@ -117,10 +119,30 @@ const AdminDashboard = () => {
 
   const handleUserAction = async (userId, action) => {
     try {
-      // API call to suspend/delete user
-      alert(`User ${action} successfully`)
+      if (action === 'suspend') {
+        await api.patch(`/admin/users/${userId}/suspend`, { reason: 'Suspended by admin' })
+        alert('User suspended successfully')
+      } else if (action === 'activate') {
+        await api.patch(`/admin/users/${userId}/activate`)
+        alert('User activated successfully')
+      } else if (action === 'delete') {
+        if (window.confirm('Are you sure you want to delete this user?')) {
+          await api.delete(`/admin/users/${userId}`)
+          alert('User deleted successfully')
+        }
+      }
       loadDashboardData()
       setAnchorEl(null)
+    } catch (err) {
+      alert('Action failed. Please try again.')
+    }
+  }
+
+  const handleVerificationAction = async (userId, status) => {
+    try {
+      await api.patch(`/admin/users/${userId}/verification`, { verificationStatus: status })
+      alert(`Stakeholder ${status === 'verified' ? 'approved' : 'rejected'} successfully`)
+      loadDashboardData()
     } catch (err) {
       alert('Action failed. Please try again.')
     }
@@ -146,7 +168,8 @@ const AdminDashboard = () => {
   const filteredUsers = users.filter(u => 
     (u.name?.toLowerCase().includes(userSearch.toLowerCase()) || 
      u.email?.toLowerCase().includes(userSearch.toLowerCase())) &&
-    (userRoleFilter === 'all' || u.role === userRoleFilter)
+    (userRoleFilter === 'all' || u.role === userRoleFilter) &&
+    (verificationFilter === 'all' || u.verificationStatus === verificationFilter)
   )
 
   const filteredOpportunities = opportunities.filter(o => 
@@ -507,7 +530,20 @@ const AdminDashboard = () => {
                   >
                     <MenuItem value="all">All Roles</MenuItem>
                     <MenuItem value="user">Users</MenuItem>
+                    <MenuItem value="stakeholder">Stakeholders</MenuItem>
                     <MenuItem value="admin">Admins</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl size="small" sx={{ minWidth: 180 }}>
+                  <Select
+                    value={verificationFilter}
+                    onChange={(e) => setVerificationFilter(e.target.value)}
+                    displayEmpty
+                  >
+                    <MenuItem value="all">All Verification Status</MenuItem>
+                    <MenuItem value="pending">Pending Approval</MenuItem>
+                    <MenuItem value="verified">Verified</MenuItem>
+                    <MenuItem value="rejected">Rejected</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
@@ -520,6 +556,7 @@ const AdminDashboard = () => {
                     <TableCell><strong>User</strong></TableCell>
                     <TableCell><strong>Email</strong></TableCell>
                     <TableCell><strong>Role</strong></TableCell>
+                    <TableCell><strong>Verification</strong></TableCell>
                     <TableCell><strong>Joined</strong></TableCell>
                     <TableCell align="right"><strong>Actions</strong></TableCell>
                   </TableRow>
@@ -527,7 +564,7 @@ const AdminDashboard = () => {
                 <TableBody>
                   {filteredUsers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         <Alert severity="info">No users found</Alert>
                       </TableCell>
                     </TableRow>
@@ -539,9 +576,16 @@ const AdminDashboard = () => {
                             <Avatar sx={{ bgcolor: 'primary.main' }}>
                               {user.name?.charAt(0).toUpperCase() || 'U'}
                             </Avatar>
-                            <Typography variant="body2" fontWeight={500}>
-                              {user.name || 'Unknown'}
-                            </Typography>
+                            <Box>
+                              <Typography variant="body2" fontWeight={500}>
+                                {user.name || 'Unknown'}
+                              </Typography>
+                              {user.companyName && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {user.companyName}
+                                </Typography>
+                              )}
+                            </Box>
                           </Box>
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
@@ -549,13 +593,47 @@ const AdminDashboard = () => {
                           <Chip 
                             label={user.role} 
                             size="small" 
-                            color={user.role === 'admin' ? 'error' : 'default'}
+                            color={user.role === 'admin' ? 'error' : user.role === 'stakeholder' ? 'info' : 'default'}
                           />
+                        </TableCell>
+                        <TableCell>
+                          {user.role === 'stakeholder' && (
+                            <Chip 
+                              label={user.verificationStatus || 'pending'} 
+                              size="small" 
+                              color={
+                                user.verificationStatus === 'verified' ? 'success' :
+                                user.verificationStatus === 'rejected' ? 'error' : 'warning'
+                              }
+                            />
+                          )}
                         </TableCell>
                         <TableCell>
                           {new Date(user.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell align="right">
+                          {user.role === 'stakeholder' && user.verificationStatus === 'pending' && (
+                            <>
+                              <Tooltip title="Approve Stakeholder">
+                                <IconButton 
+                                  size="small" 
+                                  color="success"
+                                  onClick={() => handleVerificationAction(user._id, 'verified')}
+                                >
+                                  <CheckCircle />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Reject Stakeholder">
+                                <IconButton 
+                                  size="small" 
+                                  color="error"
+                                  onClick={() => handleVerificationAction(user._id, 'rejected')}
+                                >
+                                  <Cancel />
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
                           <IconButton 
                             size="small"
                             onClick={() => {

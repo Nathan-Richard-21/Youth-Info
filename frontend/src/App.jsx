@@ -25,7 +25,9 @@ import Profile from './pages/ProfileNew'
 import AdminDashboard from './pages/AdminDashboardNew'
 import AdminPostPortal from './pages/AdminPostPortal'
 import AdminSettings from './pages/AdminSettings'
-import StakeholderDashboard from './pages/StakeholderDashboard'
+import StakeholderDashboard from './pages/StakeholderDashboard';
+import StakeholderSignup from './pages/StakeholderSignup';
+import StakeholderPostJob from './pages/StakeholderPostJob';
 import Opportunities from './pages/Opportunities'
 
 const theme = createTheme({
@@ -70,6 +72,7 @@ const App = () => {
               <Route path="/knowledge-base" element={<KnowledgeBase />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/stakeholder-signup" element={<StakeholderSignup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/profile" element={<Profile />} />
@@ -77,6 +80,8 @@ const App = () => {
               <Route path="/admin/post" element={<AdminPostPortal />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="/stakeholder" element={<StakeholderDashboard />} />
+              <Route path="/stakeholder-dashboard" element={<StakeholderDashboard />} />
+              <Route path="/stakeholder/post-job" element={<StakeholderPostJob />} />
             </Routes>
           </main>
           <Footer />

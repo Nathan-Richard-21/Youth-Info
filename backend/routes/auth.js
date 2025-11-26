@@ -7,15 +7,68 @@ const User = require('../models/User');
 
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ message: 'Missing fields' });
+    const { 
+      name, 
+      email, 
+      password, 
+      role, 
+      companyName, 
+      companyDescription, 
+      companyIndustry, 
+      companySize, 
+      companyWebsite, 
+      companyPhone, 
+      companyLocation 
+    } = req.body;
+    
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
+    }
+    
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: 'Email taken' });
+    if (exists) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+    
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hash });
+    
+    // Create user object with basic fields
+    const userData = {
+      name,
+      email,
+      password: hash,
+      role: role || 'user' // Default to 'user' if not specified
+    };
+    
+    // Add company fields if role is stakeholder
+    if (role === 'stakeholder') {
+      userData.companyName = companyName;
+      userData.companyDescription = companyDescription;
+      userData.companyIndustry = companyIndustry;
+      userData.companySize = companySize;
+      userData.companyWebsite = companyWebsite;
+      userData.phone = companyPhone; // Using the existing phone field
+      userData.location = companyLocation; // Using the existing location field
+      userData.verificationStatus = 'pending'; // Set initial verification status
+    }
+    
+    const user = await User.create(userData);
+    
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        companyName: user.companyName,
+        verificationStatus: user.verificationStatus
+      } 
+    });
   } catch (err) {
+    console.error('❌ REGISTRATION ERROR:', err);
     res.status(500).json({ message: err.message });
   }
 });
