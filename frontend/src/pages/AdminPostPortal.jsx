@@ -156,11 +156,8 @@ const AdminPostPortal = () => {
       const formDataUpload = new FormData()
       formDataUpload.append('image', file)
       
-      const response = await api.post('/upload/image', formDataUpload, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      // Don't set Content-Type manually - let axios handle it with proper boundary
+      const response = await api.post('/upload/image', formDataUpload)
       
       // Set the image URL from backend
       const imageUrl = `http://localhost:5001${response.data.imageUrl}`

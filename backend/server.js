@@ -3,18 +3,19 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const fileUpload = require('express-fileupload');
+// const fileUpload = require('express-fileupload'); // DISABLED - Using multer instead
 
 dotenv.config();
 console.log('🔑 JWT_SECRET loaded:', process.env.JWT_SECRET ? `${process.env.JWT_SECRET.substring(0, 10)}...` : 'NOT SET!');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(fileUpload({
-  createParentPath: true,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
-  abortOnLimit: true
-}));
+// DISABLED express-fileupload - Using multer in upload routes instead
+// app.use(fileUpload({
+//   createParentPath: true,
+//   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+//   abortOnLimit: true
+// }));
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

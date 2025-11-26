@@ -30,7 +30,8 @@ import {
   Delete as DeleteIcon,
   Preview as PreviewIcon,
   Save as SaveIcon,
-  ArrowBack as ArrowBackIcon
+  ArrowBack as ArrowBackIcon,
+  Image as ImageIcon
 } from '@mui/icons-material';
 import api from '../api';
 
@@ -56,6 +57,7 @@ const StakeholderPostJob = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -66,7 +68,8 @@ const StakeholderPostJob = () => {
     externalLink: '',
     allowInternalApplication: true,
     applicationQuestions: [],
-    requiredDocuments: []
+    requiredDocuments: [],
+    imageUrl: ''
   });
 
   const [newQuestion, setNewQuestion] = useState({
@@ -91,6 +94,65 @@ const StakeholderPostJob = () => {
     setFormData({
       ...formData,
       [name]: name === 'allowInternalApplication' ? checked : value
+    });
+  };
+
+  // Image Upload Handlers
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      e.target.value = ''; // Reset input
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      e.target.value = ''; // Reset input
+      return;
+    }
+
+    setUploadingImage(true);
+    setError('');
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('image', file);
+
+      console.log('📤 Uploading image:', file.name, file.type, file.size);
+
+      const response = await api.post('/upload/image', formDataToSend);
+
+      console.log('📥 Upload response:', response.data);
+
+      // Backend returns imageUrl, not url
+      const imageUrl = response.data.imageUrl;
+      
+      setFormData({
+        ...formData,
+        imageUrl: `http://localhost:5001${imageUrl}` // Add full URL
+      });
+      setSuccess('Image uploaded successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+      e.target.value = ''; // Reset input for next upload
+    } catch (err) {
+      console.error('Upload error:', err);
+      console.error('Error response:', err.response?.data);
+      setError(err.response?.data?.message || 'Failed to upload image');
+      e.target.value = ''; // Reset input on error
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData({
+      ...formData,
+      imageUrl: ''
     });
   };
 
@@ -196,13 +258,42 @@ const StakeholderPostJob = () => {
     setError('');
 
     try {
-      const response = await api.post('/stakeholder/opportunities', formData);
+      // Map form data to backend schema
+      const categoryMap = {
+        'Bursaries': 'bursary',
+        'Learnerships': 'learnership',
+        'Internships': 'career',
+        'Jobs': 'career',
+        'Events': 'event',
+        'Volunteer Work': 'career',
+        'Business Funding': 'business'
+      };
+
+      const submissionData = {
+        title: formData.title,
+        description: formData.description,
+        category: categoryMap[formData.category] || 'career',
+        subcategory: formData.category, // Store original selection as subcategory
+        location: formData.location,
+        deadline: formData.deadline,
+        closingDate: formData.deadline, // Use deadline as closingDate (required field)
+        applyUrl: formData.externalLink || undefined,
+        allowInternalApplication: formData.allowInternalApplication,
+        applicationQuestions: formData.applicationQuestions,
+        requiredDocuments: formData.requiredDocuments,
+        imageUrl: formData.imageUrl || undefined
+      };
+
+      console.log('📤 Submitting opportunity:', submissionData);
+
+      const response = await api.post('/stakeholder/opportunities', submissionData);
       setSuccess('Opportunity posted successfully!');
       
       setTimeout(() => {
         navigate('/stakeholder-dashboard');
       }, 2000);
     } catch (err) {
+      console.error('❌ Submit error:', err);
       setError(err.response?.data?.message || 'Failed to post opportunity');
     } finally {
       setLoading(false);
@@ -236,6 +327,86 @@ const StakeholderPostJob = () => {
           onChange={handleChange}
           placeholder="Provide detailed information about the opportunity..."
         />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Typography variant="subtitle2" gutterBottom sx={{ color: '#0047AB', fontWeight: 600 }}>
+          Feature Image (Optional)
+        </Typography>
+        <Typography variant="caption" display="block" color="text.secondary" sx={{ mb: 2 }}>
+          Add an eye-catching image to make your opportunity stand out
+        </Typography>
+        
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <Button
+            variant="contained"
+            component="label"
+            startIcon={<ImageIcon />}
+            disabled={uploadingImage}
+            sx={{
+              bgcolor: '#FF8C00',
+              color: '#fff',
+              '&:hover': {
+                bgcolor: '#FF6900'
+              }
+            }}
+          >
+            {uploadingImage ? 'Uploading...' : 'Upload Image'}
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handleImageUpload}
+            />
+          </Button>
+
+          <TextField
+            fullWidth
+            size="small"
+            label="Or enter Image URL"
+            value={formData.imageUrl}
+            onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+            placeholder="https://example.com/image.jpg"
+            sx={{ flex: 1, minWidth: '250px' }}
+          />
+        </Box>
+
+        {formData.imageUrl && (
+          <Box sx={{ mt: 2, position: 'relative', display: 'inline-block' }}>
+            <Box
+              component="img"
+              src={formData.imageUrl}
+              alt="Preview"
+              sx={{
+                maxWidth: '300px',
+                maxHeight: '200px',
+                borderRadius: 2,
+                border: '2px solid #0047AB',
+                display: 'block'
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                setError('Failed to load image. Please check the URL.');
+              }}
+            />
+            <IconButton
+              onClick={removeImage}
+              sx={{
+                position: 'absolute',
+                top: -8,
+                right: -8,
+                bgcolor: '#FF8C00',
+                color: '#fff',
+                '&:hover': {
+                  bgcolor: '#FF6900'
+                }
+              }}
+              size="small"
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
       </Grid>
 
       <Grid item xs={12} md={6}>

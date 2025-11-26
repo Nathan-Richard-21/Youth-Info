@@ -23,6 +23,8 @@ const AdminDashboard = () => {
   const [selectedOpp, setSelectedOpp] = useState(null)
   const [rejectReason, setRejectReason] = useState('')
   const [showRejectDialog, setShowRejectDialog] = useState(false)
+  const [showViewDialog, setShowViewDialog] = useState(false)
+  const [viewingOpp, setViewingOpp] = useState(null)
   
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
@@ -114,6 +116,11 @@ const AdminDashboard = () => {
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete')
     }
+  }
+
+  const handleViewOpportunity = (opp) => {
+    setViewingOpp(opp)
+    setShowViewDialog(true)
   }
 
   if (loading) {
@@ -235,7 +242,7 @@ const AdminDashboard = () => {
                         <IconButton color="error" size="small" onClick={() => { setSelectedOpp(opp._id); setShowRejectDialog(true); }}>
                           <Cancel />
                         </IconButton>
-                        <IconButton size="small" onClick={() => window.open(`/opportunities/${opp._id}`, '_blank')}>
+                        <IconButton size="small" onClick={() => handleViewOpportunity(opp)}>
                           <Visibility />
                         </IconButton>
                       </TableCell>
@@ -324,6 +331,9 @@ const AdminDashboard = () => {
                     <TableCell>{opp.applications || 0}</TableCell>
                     <TableCell>{new Date(opp.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
+                      <IconButton size="small" onClick={() => handleViewOpportunity(opp)}>
+                        <Visibility />
+                      </IconButton>
                       <IconButton size="small" onClick={() => navigate(`/admin/post?edit=${opp._id}`)}>
                         <Edit />
                       </IconButton>
@@ -356,6 +366,251 @@ const AdminDashboard = () => {
           <DialogActions>
             <Button onClick={() => setShowRejectDialog(false)}>Cancel</Button>
             <Button onClick={handleReject} variant="contained" color="error">Reject</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* View Opportunity Dialog */}
+        <Dialog 
+          open={showViewDialog} 
+          onClose={() => setShowViewDialog(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle sx={{ bgcolor: '#0047AB', color: '#fff' }}>
+            Opportunity Details
+          </DialogTitle>
+          <DialogContent sx={{ mt: 2 }}>
+            {viewingOpp && (
+              <Box>
+                {/* Image */}
+                {viewingOpp.imageUrl && (
+                  <Box sx={{ mb: 3, textAlign: 'center' }}>
+                    <img 
+                      src={viewingOpp.imageUrl} 
+                      alt={viewingOpp.title}
+                      style={{ 
+                        maxWidth: '100%', 
+                        maxHeight: '400px', 
+                        borderRadius: '8px',
+                        objectFit: 'cover'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* Title */}
+                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ color: '#0047AB' }}>
+                  {viewingOpp.title}
+                </Typography>
+
+                {/* Status and Category Chips */}
+                <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Chip 
+                    label={`Status: ${viewingOpp.status}`}
+                    color={viewingOpp.status === 'approved' ? 'success' : viewingOpp.status === 'rejected' ? 'error' : 'warning'}
+                    size="small"
+                  />
+                  <Chip 
+                    label={`Category: ${viewingOpp.category}`}
+                    color="primary"
+                    size="small"
+                  />
+                  {viewingOpp.subcategory && (
+                    <Chip 
+                      label={viewingOpp.subcategory}
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
+                </Box>
+
+                {/* Description */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#FF8C00' }}>
+                    Description
+                  </Typography>
+                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                    {viewingOpp.description}
+                  </Typography>
+                </Box>
+
+                {/* Details Grid */}
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                  {viewingOpp.organization && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Organization</Typography>
+                      <Typography variant="body1" fontWeight={600}>{viewingOpp.organization}</Typography>
+                    </Grid>
+                  )}
+                  {viewingOpp.location && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Location</Typography>
+                      <Typography variant="body1" fontWeight={600}>{viewingOpp.location}</Typography>
+                    </Grid>
+                  )}
+                  {viewingOpp.deadline && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Deadline</Typography>
+                      <Typography variant="body1" fontWeight={600}>
+                        {new Date(viewingOpp.deadline).toLocaleDateString()}
+                      </Typography>
+                    </Grid>
+                  )}
+                  {viewingOpp.closingDate && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Closing Date</Typography>
+                      <Typography variant="body1" fontWeight={600}>
+                        {new Date(viewingOpp.closingDate).toLocaleDateString()}
+                      </Typography>
+                    </Grid>
+                  )}
+                  {viewingOpp.employmentType && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Employment Type</Typography>
+                      <Typography variant="body1" fontWeight={600}>{viewingOpp.employmentType}</Typography>
+                    </Grid>
+                  )}
+                  {viewingOpp.salary && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Salary</Typography>
+                      <Typography variant="body1" fontWeight={600}>{viewingOpp.salary}</Typography>
+                    </Grid>
+                  )}
+                  {viewingOpp.amount && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">Amount</Typography>
+                      <Typography variant="body1" fontWeight={600}>{viewingOpp.amount}</Typography>
+                    </Grid>
+                  )}
+                </Grid>
+
+                {/* Application Link */}
+                {viewingOpp.applyUrl && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Application Link</Typography>
+                    <Typography variant="body1">
+                      <a href={viewingOpp.applyUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0047AB' }}>
+                        {viewingOpp.applyUrl}
+                      </a>
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Internal Application */}
+                {viewingOpp.allowInternalApplication && (
+                  <Box sx={{ mb: 2 }}>
+                    <Alert severity="info">
+                      This opportunity accepts internal applications through the platform
+                    </Alert>
+                  </Box>
+                )}
+
+                {/* Application Questions */}
+                {viewingOpp.applicationQuestions && viewingOpp.applicationQuestions.length > 0 && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#FF8C00' }}>
+                      Application Questions
+                    </Typography>
+                    {viewingOpp.applicationQuestions.map((q, index) => (
+                      <Box key={index} sx={{ mb: 1, pl: 2 }}>
+                        <Typography variant="body2">
+                          {index + 1}. {q.question} {q.required && <span style={{ color: 'red' }}>*</span>}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Type: {q.type}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+
+                {/* Required Documents */}
+                {viewingOpp.requiredDocuments && viewingOpp.requiredDocuments.length > 0 && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#FF8C00' }}>
+                      Required Documents
+                    </Typography>
+                    {viewingOpp.requiredDocuments.map((doc, index) => (
+                      <Box key={index} sx={{ mb: 1, pl: 2 }}>
+                        <Typography variant="body2">
+                          • {doc.name} {doc.required && <span style={{ color: 'red' }}>*</span>}
+                        </Typography>
+                        {doc.description && (
+                          <Typography variant="caption" color="text.secondary">
+                            {doc.description}
+                          </Typography>
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+
+                {/* Stats */}
+                <Box sx={{ mt: 3, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">Views</Typography>
+                      <Typography variant="h6" fontWeight={700}>{viewingOpp.views || 0}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">Applications</Typography>
+                      <Typography variant="h6" fontWeight={700}>{viewingOpp.applications || 0}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">Created By</Typography>
+                      <Typography variant="body1">{viewingOpp.createdBy?.name || 'Unknown'}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">Created At</Typography>
+                      <Typography variant="body1">
+                        {new Date(viewingOpp.createdAt).toLocaleDateString()}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {/* Rejection Reason */}
+                {viewingOpp.status === 'rejected' && viewingOpp.rejectionReason && (
+                  <Alert severity="error" sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600}>Rejection Reason:</Typography>
+                    <Typography variant="body2">{viewingOpp.rejectionReason}</Typography>
+                  </Alert>
+                )}
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            {viewingOpp && viewingOpp.status === 'pending' && (
+              <>
+                <Button 
+                  onClick={() => {
+                    setShowViewDialog(false)
+                    handleApprove(viewingOpp._id)
+                  }} 
+                  variant="contained" 
+                  color="success"
+                  startIcon={<CheckCircle />}
+                >
+                  Approve
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setShowViewDialog(false)
+                    setSelectedOpp(viewingOpp._id)
+                    setShowRejectDialog(true)
+                  }} 
+                  variant="contained" 
+                  color="error"
+                  startIcon={<Cancel />}
+                >
+                  Reject
+                </Button>
+              </>
+            )}
+            <Button onClick={() => setShowViewDialog(false)}>Close</Button>
           </DialogActions>
         </Dialog>
       </Container>
