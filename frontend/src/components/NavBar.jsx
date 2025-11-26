@@ -44,30 +44,138 @@ const NavBar = () => {
   ]
 
   return (
-    <AppBar position="sticky" elevation={0} sx={{ backgroundColor: 'white', color: 'primary.main', borderBottom: '1px solid #e5e7eb' }}>
-      <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 0, fontWeight: 700, mr: 4 }} component={Link} to="/" style={{ color: '#6366f1', textDecoration: 'none' }}>
-          YouthPortal EC
-        </Typography>
+    <AppBar 
+      position="sticky" 
+      elevation={0} 
+      sx={{ 
+        background: 'linear-gradient(90deg, #0047AB 0%, #1E90FF 50%, #FF8C00 100%)',
+        color: 'white',
+        borderBottom: '3px solid #FF8C00',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 4px 16px rgba(0, 71, 171, 0.2)'
+      }}
+    >
+      <Toolbar sx={{ py: 1 }}>
+        <Box 
+          component={Link} 
+          to="/" 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            textDecoration: 'none', 
+            mr: 4,
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+              transform: 'scale(1.05)'
+            }
+          }}
+        >
+          <img 
+            src="/ELIDZ-STP LOGO.png" 
+            alt="ELIDZ-STP Logo" 
+            style={{ 
+              height: '50px', 
+              marginRight: '12px',
+              filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.2))'
+            }} 
+          />
+          <Box>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 800, 
+                color: 'white',
+                lineHeight: 1.2,
+                fontSize: { xs: '0.95rem', md: '1.1rem' },
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+              }}
+            >
+              ELIDZ-STP
+            </Typography>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: '#FF8C00',
+                fontWeight: 600,
+                fontSize: { xs: '0.7rem', md: '0.75rem' },
+                textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+              }}
+            >
+              Youth Portal
+            </Typography>
+          </Box>
+        </Box>
         
         {isMobile ? (
           <>
             <Box sx={{ flexGrow: 1 }} />
             <Tooltip title={language === 'en' ? 'Switch to isiXhosa' : 'Tshintshela kuIsiNgesi'}>
-              <IconButton onClick={toggleLanguage} color="primary">
+              <IconButton 
+                onClick={toggleLanguage} 
+                sx={{ 
+                  color: '#FF8C00',
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  '&:hover': { bgcolor: 'rgba(255, 140, 0, 0.2)' }
+                }}
+              >
                 <TranslateIcon />
               </IconButton>
             </Tooltip>
             {isAdmin && (
               <Tooltip title="Admin Settings (DEV)">
-                <IconButton component={Link} to="/admin/settings" color="secondary">
+                <IconButton 
+                  component={Link} 
+                  to="/admin/settings" 
+                  sx={{ 
+                    color: '#FF8C00',
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    ml: 1,
+                    '&:hover': { bgcolor: 'rgba(255, 140, 0, 0.2)' }
+                  }}
+                >
                   <SettingsIcon />
                 </IconButton>
               </Tooltip>
             )}
-            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}><MenuIcon /></IconButton>
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-              {pages.map(p => <MenuItem key={p.path} component={Link} to={p.path} onClick={() => setAnchorEl(null)}>{p.label}</MenuItem>)}
+            <IconButton 
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              sx={{ 
+                color: 'white',
+                bgcolor: 'rgba(255, 255, 255, 0.1)',
+                ml: 1,
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' }
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu 
+              anchorEl={anchorEl} 
+              open={Boolean(anchorEl)} 
+              onClose={() => setAnchorEl(null)}
+              PaperProps={{
+                sx: {
+                  mt: 1,
+                  borderRadius: 2,
+                  boxShadow: '0 8px 32px rgba(0, 71, 171, 0.2)'
+                }
+              }}
+            >
+              {pages.map(p => (
+                <MenuItem 
+                  key={p.path} 
+                  component={Link} 
+                  to={p.path} 
+                  onClick={() => setAnchorEl(null)}
+                  sx={{ 
+                    '&:hover': { 
+                      bgcolor: 'rgba(0, 71, 171, 0.08)',
+                      color: '#0047AB'
+                    }
+                  }}
+                >
+                  {p.label}
+                </MenuItem>
+              ))}
               {token ? (
                 <>
                   <MenuItem component={Link} to="/profile" onClick={() => setAnchorEl(null)}>{content.nav.profile}</MenuItem>
@@ -85,34 +193,170 @@ const NavBar = () => {
           </>
         ) : (
           <>
-            <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
-              {pages.map(p => <Button key={p.path} component={Link} to={p.path} sx={{ color: 'text.primary', textTransform: 'none' }}>{p.label}</Button>)}
+            <Box sx={{ display: 'flex', gap: 0.5, flexGrow: 1 }}>
+              {pages.map(p => (
+                <Button 
+                  key={p.path} 
+                  component={Link} 
+                  to={p.path} 
+                  sx={{ 
+                    color: 'white', 
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    px: 1.5,
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': { 
+                      bgcolor: 'rgba(255, 255, 255, 0.15)',
+                      color: '#FF8C00',
+                      transform: 'translateY(-2px)'
+                    }
+                  }}
+                >
+                  {p.label}
+                </Button>
+              ))}
             </Box>
             <Tooltip title={language === 'en' ? 'Switch to isiXhosa' : 'Tshintshela kuIsiNgesi'}>
-              <IconButton onClick={toggleLanguage} color="primary" sx={{ mr: 1 }}>
+              <IconButton 
+                onClick={toggleLanguage} 
+                sx={{ 
+                  mr: 1,
+                  color: '#FF8C00',
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  '&:hover': { 
+                    bgcolor: 'rgba(255, 140, 0, 0.2)',
+                    transform: 'scale(1.1)'
+                  }
+                }}
+              >
                 <TranslateIcon />
               </IconButton>
             </Tooltip>
             {token ? (
               <>
-                <Button component={Link} to="/profile" variant="outlined" sx={{ mr: 1 }}>{content.nav.profile}</Button>
+                <Button 
+                  component={Link} 
+                  to="/profile" 
+                  variant="outlined" 
+                  sx={{ 
+                    mr: 1,
+                    color: 'white',
+                    borderColor: 'white',
+                    '&:hover': {
+                      borderColor: '#FF8C00',
+                      bgcolor: 'rgba(255, 140, 0, 0.1)',
+                      color: '#FF8C00'
+                    }
+                  }}
+                >
+                  {content.nav.profile}
+                </Button>
                 {isAdmin && (
                   <>
-                    <Button component={Link} to="/admin" variant="outlined" sx={{ mr: 1 }}>Admin</Button>
+                    <Button 
+                      component={Link} 
+                      to="/admin" 
+                      variant="outlined" 
+                      sx={{ 
+                        mr: 1,
+                        color: 'white',
+                        borderColor: 'white',
+                        '&:hover': {
+                          borderColor: '#FF8C00',
+                          bgcolor: 'rgba(255, 140, 0, 0.1)',
+                          color: '#FF8C00'
+                        }
+                      }}
+                    >
+                      Admin
+                    </Button>
                     <Tooltip title="Admin Settings (DEV)">
-                      <IconButton component={Link} to="/admin/settings" color="secondary" sx={{ mr: 1 }}>
+                      <IconButton 
+                        component={Link} 
+                        to="/admin/settings" 
+                        sx={{ 
+                          mr: 1,
+                          color: '#FF8C00',
+                          bgcolor: 'rgba(255, 255, 255, 0.1)',
+                          '&:hover': { bgcolor: 'rgba(255, 140, 0, 0.2)' }
+                        }}
+                      >
                         <SettingsIcon />
                       </IconButton>
                     </Tooltip>
                   </>
                 )}
-                {isStakeholder && <Button component={Link} to="/stakeholder" variant="outlined" sx={{ mr: 1 }}>Dashboard</Button>}
-                <Button onClick={logout} variant="text">{content.nav.logout}</Button>
+                {isStakeholder && (
+                  <Button 
+                    component={Link} 
+                    to="/stakeholder" 
+                    variant="outlined" 
+                    sx={{ 
+                      mr: 1,
+                      color: 'white',
+                      borderColor: 'white',
+                      '&:hover': {
+                        borderColor: '#FF8C00',
+                        bgcolor: 'rgba(255, 140, 0, 0.1)',
+                        color: '#FF8C00'
+                      }
+                    }}
+                  >
+                    Dashboard
+                  </Button>
+                )}
+                <Button 
+                  onClick={logout} 
+                  variant="text"
+                  sx={{ 
+                    color: 'white',
+                    '&:hover': { 
+                      bgcolor: 'rgba(239, 68, 68, 0.2)',
+                      color: '#FF8C00'
+                    }
+                  }}
+                >
+                  {content.nav.logout}
+                </Button>
               </>
             ) : (
               <>
-                <Button component={Link} to="/login" variant="outlined" sx={{ mr: 1 }}>{content.nav.login}</Button>
-                <Button component={Link} to="/register" variant="contained">{content.nav.signup}</Button>
+                <Button 
+                  component={Link} 
+                  to="/login" 
+                  variant="outlined" 
+                  sx={{ 
+                    mr: 1,
+                    color: 'white',
+                    borderColor: 'white',
+                    '&:hover': {
+                      borderColor: '#FF8C00',
+                      bgcolor: 'rgba(255, 140, 0, 0.1)',
+                      color: '#FF8C00'
+                    }
+                  }}
+                >
+                  {content.nav.login}
+                </Button>
+                <Button 
+                  component={Link} 
+                  to="/register" 
+                  variant="contained"
+                  sx={{
+                    background: 'linear-gradient(135deg, #FF8C00 0%, #FF6900 100%)',
+                    color: '#ffffff',
+                    fontWeight: 700,
+                    boxShadow: '0 4px 12px rgba(255, 140, 0, 0.4)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #FF6900 0%, #FF5500 100%)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 20px rgba(255, 140, 0, 0.5)'
+                    }
+                  }}
+                >
+                  {content.nav.signup}
+                </Button>
               </>
             )}
           </>
