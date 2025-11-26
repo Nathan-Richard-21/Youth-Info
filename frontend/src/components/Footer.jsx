@@ -51,6 +51,7 @@ const Footer = () => {
           <Grid item xs={6} md={2}>
             <Typography variant="subtitle1" gutterBottom fontWeight={600}>About</Typography>
             <MuiLink href="#" color="grey.400" display="block" mb={1}>About Us</MuiLink>
+            <MuiLink component={Link} to="/faq" color="grey.400" display="block" mb={1}>FAQ</MuiLink>
             <MuiLink href="#" color="grey.400" display="block" mb={1}>Privacy Policy</MuiLink>
             <MuiLink href="#" color="grey.400" display="block" mb={1}>Terms of Service</MuiLink>
             <MuiLink href="#" color="grey.400" display="block" mb={1}>Help Center</MuiLink>

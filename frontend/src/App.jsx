@@ -17,6 +17,7 @@ import Events from './pages/Events'
 import Forums from './pages/Forums'
 import ResumeBuilder from './pages/ResumeBuilder'
 import KnowledgeBase from './pages/KnowledgeBase'
+import FAQ from './pages/FAQ'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
@@ -70,6 +71,7 @@ const App = () => {
               <Route path="/forums" element={<Forums />} />
               <Route path="/resume-builder" element={<ResumeBuilder />} />
               <Route path="/knowledge-base" element={<KnowledgeBase />} />
+              <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/stakeholder-signup" element={<StakeholderSignup />} />

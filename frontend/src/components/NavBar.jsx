@@ -35,6 +35,7 @@ const NavBar = () => {
     { label: content.nav.careers, path: '/careers' },
     { label: content.nav.learnerships, path: '/learnerships' },
     { label: content.nav.businessFunding, path: '/business-funding' },
+    { label: 'FAQ', path: '/faq' },
     { label: content.nav.medicalChat, path: '/medical-chat' },
     { label: content.nav.successStories, path: '/success-stories' },
     { label: content.nav.events, path: '/events' },

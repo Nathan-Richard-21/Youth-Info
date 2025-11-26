@@ -12,7 +12,6 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import BusinessIcon from '@mui/icons-material/Business';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import GroupsIcon from '@mui/icons-material/Groups';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useLanguage } from '../context/LanguageContext'
 
 const HomePage = () => {
