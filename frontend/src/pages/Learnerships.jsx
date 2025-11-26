@@ -123,9 +123,13 @@ const Learnerships = () => {
                   <Grid item xs={12} md={6} key={learn._id}>
                     <Card sx={{ height: '100%', '&:hover': { boxShadow: 6 } }}>
                       {learn.imageUrl && (
-                        <Box component="img" src={learn.imageUrl} alt={learn.title}
+                        <Box 
+                          component="img" 
+                          src={learn.imageUrl.startsWith('http') ? learn.imageUrl : `http://localhost:5001${learn.imageUrl}`} 
+                          alt={learn.title}
                           sx={{ height: 180, width: '100%', objectFit: 'cover' }}
-                          onError={(e) => e.target.style.display = 'none'} />
+                          onError={(e) => e.target.style.display = 'none'} 
+                        />
                       )}
                       <CardContent>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>

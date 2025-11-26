@@ -74,20 +74,28 @@ const documentUpload = multer({
 // @access  Private (authenticated users)
 router.post('/image', auth, upload.single('image'), (req, res) => {
   try {
+    console.log('📸 Image upload request received');
+    console.log('User:', req.user?.id);
+    console.log('File:', req.file);
+    
     if (!req.file) {
+      console.log('❌ No file in request');
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
     // Return the file URL
     const fileUrl = `/uploads/${req.file.filename}`;
     
+    console.log('✅ Image uploaded successfully:', fileUrl);
+    
     res.status(200).json({
       message: 'Image uploaded successfully',
       imageUrl: fileUrl,
+      url: fileUrl, // Also include 'url' for consistency
       filename: req.file.filename
     });
   } catch (err) {
-    console.error('Upload error:', err);
+    console.error('❌ Upload error:', err);
     res.status(500).json({ message: 'Error uploading image', error: err.message });
   }
 });

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Avatar, Chip, Button, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material'
+import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Avatar, Chip, Button, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import ShareIcon from '@mui/icons-material/Share'
+import ImageIcon from '@mui/icons-material/Image'
+import DeleteIcon from '@mui/icons-material/Delete'
 import api from '../api'
 
 const SuccessStories = () => {
@@ -10,6 +12,8 @@ const SuccessStories = () => {
   const [error, setError] = useState('')
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageUrl, setImageUrl] = useState('')
   const [newStory, setNewStory] = useState({
     title: '',
     description: '',
@@ -33,6 +37,71 @@ const SuccessStories = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      console.log('❌ No file selected')
+      return
+    }
+
+    console.log('📁 File selected:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      sizeInMB: (file.size / (1024 * 1024)).toFixed(2)
+    })
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      console.log('❌ Invalid file type:', file.type)
+      alert('Please upload an image file')
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      console.log('❌ File too large:', file.size)
+      alert('Image size should be less than 5MB')
+      return
+    }
+
+    try {
+      setUploadingImage(true)
+      console.log('⬆️ Starting image upload...')
+      
+      const formData = new FormData()
+      formData.append('image', file)
+      
+      console.log('📤 FormData created, sending request to /upload/image')
+
+      const response = await api.post('/upload/image', formData)
+      
+      console.log('✅ Upload response:', response.data)
+      
+      // Handle both 'url' and 'imageUrl' fields from response
+      const uploadedUrl = response.data.url || response.data.imageUrl
+      
+      if (!uploadedUrl) {
+        throw new Error('No URL returned from server')
+      }
+      
+      setImageUrl(uploadedUrl)
+      console.log('✅ Image uploaded successfully:', uploadedUrl)
+      alert('Image uploaded successfully!')
+    } catch (err) {
+      console.error('❌ Image upload error:', err)
+      console.error('Error response:', err.response)
+      console.error('Error data:', err.response?.data)
+      alert('Failed to upload image: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const removeImage = () => {
+    setImageUrl('')
   }
 
   const handleShareStory = async () => {
@@ -74,7 +143,8 @@ const SuccessStories = () => {
         organization: newStory.organization.trim() || 'Community Member',
         closingDate: closingDate.toISOString(),
         requirements: [],
-        tags: ['success', 'inspiration', 'youth']
+        tags: ['success', 'inspiration', 'youth'],
+        imageUrl: imageUrl || undefined // Add image URL if uploaded
       }
       
       console.log('\n📤 Sending POST request to /opportunities');
@@ -91,6 +161,7 @@ const SuccessStories = () => {
       alert('Your success story has been submitted! It will be reviewed by our team before being published.')
       setShareDialogOpen(false)
       setNewStory({ title: '', description: '', location: '', organization: '' })
+      setImageUrl('') // Reset image
       fetchStories()
     } catch (err) {
       console.error('\n❌❌❌ ERROR SUBMITTING STORY ❌❌❌');
@@ -159,8 +230,16 @@ const SuccessStories = () => {
                   <Grid item xs={12} md={6} key={story._id}>
                     <Card sx={{ height: '100%', '&:hover': { boxShadow: 8 } }}>
                       {story.imageUrl && (
-                        <CardMedia component="img" height="200" image={story.imageUrl} alt={story.title}
-                          onError={(e) => e.target.style.display = 'none'} />
+                        <CardMedia 
+                          component="img" 
+                          height="200" 
+                          image={story.imageUrl.startsWith('http') ? story.imageUrl : `http://localhost:5001${story.imageUrl}`} 
+                          alt={story.title}
+                          onError={(e) => {
+                            console.error('Failed to load image:', story.imageUrl)
+                            e.target.style.display = 'none'
+                          }} 
+                        />
                       )}
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1, flexWrap: 'wrap' }}>
@@ -232,6 +311,63 @@ const SuccessStories = () => {
           <Typography variant="body2" color="text.secondary" mb={3}>
             Tell us about your journey! Your story will inspire other young people in Eastern Cape.
           </Typography>
+
+          {/* Image Upload Section */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" gutterBottom fontWeight={600}>
+              Add a Photo (Optional)
+            </Typography>
+            <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+              Upload an image to make your story more engaging
+            </Typography>
+            
+            {imageUrl ? (
+              <Box sx={{ position: 'relative', mb: 2 }}>
+                <Box
+                  component="img"
+                  src={`http://localhost:5001${imageUrl}`}
+                  alt="Story image"
+                  sx={{
+                    width: '100%',
+                    maxHeight: 300,
+                    objectFit: 'cover',
+                    borderRadius: 2,
+                    border: '2px solid #e0e0e0'
+                  }}
+                />
+                <IconButton
+                  onClick={removeImage}
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    bgcolor: 'white',
+                    '&:hover': { bgcolor: '#f5f5f5' }
+                  }}
+                  size="small"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            ) : (
+              <Button
+                variant="outlined"
+                component="label"
+                fullWidth
+                startIcon={uploadingImage ? <CircularProgress size={20} /> : <ImageIcon />}
+                disabled={uploadingImage}
+                sx={{ py: 2, mb: 2 }}
+              >
+                {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+              </Button>
+            )}
+          </Box>
           
           <TextField
             label="Story Title"

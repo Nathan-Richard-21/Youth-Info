@@ -386,7 +386,7 @@ const AdminDashboard = () => {
                 {viewingOpp.imageUrl && (
                   <Box sx={{ mb: 3, textAlign: 'center' }}>
                     <img 
-                      src={viewingOpp.imageUrl} 
+                      src={viewingOpp.imageUrl.startsWith('http') ? viewingOpp.imageUrl : `http://localhost:5001${viewingOpp.imageUrl}`} 
                       alt={viewingOpp.title}
                       style={{ 
                         maxWidth: '100%', 
@@ -395,6 +395,7 @@ const AdminDashboard = () => {
                         objectFit: 'cover'
                       }}
                       onError={(e) => {
+                        console.error('Failed to load image:', viewingOpp.imageUrl)
                         e.target.style.display = 'none'
                       }}
                     />

@@ -125,9 +125,13 @@ const BusinessFunding = () => {
                   <Grid item xs={12} md={6} key={g._id}>
                     <Card sx={{ height: '100%', '&:hover': { boxShadow: 6 } }}>
                       {g.imageUrl && (
-                        <Box component="img" src={g.imageUrl} alt={g.title}
+                        <Box 
+                          component="img" 
+                          src={g.imageUrl.startsWith('http') ? g.imageUrl : `http://localhost:5001${g.imageUrl}`} 
+                          alt={g.title}
                           sx={{ height: 180, width: '100%', objectFit: 'cover' }}
-                          onError={(e) => e.target.style.display = 'none'} />
+                          onError={(e) => e.target.style.display = 'none'} 
+                        />
                       )}
                       <CardContent>
                         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>

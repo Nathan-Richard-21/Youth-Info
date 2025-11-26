@@ -196,7 +196,7 @@ const Careers = () => {
                       {job.imageUrl && (
                         <Box
                           component="img"
-                          src={job.imageUrl}
+                          src={job.imageUrl.startsWith('http') ? job.imageUrl : `http://localhost:5001${job.imageUrl}`}
                           alt={job.title}
                           sx={{ height: 200, width: '100%', objectFit: 'cover' }}
                           onError={(e) => e.target.style.display = 'none'}

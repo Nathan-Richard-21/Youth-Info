@@ -6,12 +6,17 @@ import EventIcon from '@mui/icons-material/Event'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
 import { formatDate, isExpiringSoon } from '../utils/dateUtils'
+import QuickApplyDialog from '../components/QuickApplyDialog'
 
 const Events = () => {
   const [tabValue, setTabValue] = useState(0)
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showApplyDialog, setShowApplyDialog] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState(null)
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const token = localStorage.getItem('token')
 
   useEffect(() => {
     fetchEvents()
@@ -31,25 +36,28 @@ const Events = () => {
     }
   }
 
-  const handleRegister = async (event) => {
-    // If external URL exists, open it
-    if (event.applyUrl) {
-      window.open(event.applyUrl, '_blank')
+  const handleRegister = (event) => {
+    if (!token) {
+      alert('Please login to register for events')
       return
     }
     
-    // Otherwise submit internal registration
-    try {
-      await api.post(`/opportunities/${event._id}/apply`, {
-        message: 'I would like to register for this event.'
-      })
-      alert('Registration submitted successfully!')
-    } catch (err) {
-      if (err.response?.status === 401) {
-        alert('Please log in to register for events.')
-      } else {
-        alert('Failed to register. Please try again.')
-      }
+    // Check if opportunity allows internal application (our platform)
+    if (event.allowInternalApplication) {
+      setSelectedEvent(event)
+      setShowApplyDialog(true)
+    }
+    // If has external URL, redirect there
+    else if (event.applyUrl) {
+      window.open(event.applyUrl, '_blank')
+    } 
+    // Fallback to website if available
+    else if (event.website) {
+      window.open(event.website, '_blank')
+    } 
+    // No application method available
+    else {
+      alert('No registration method available for this event')
     }
   }
 
@@ -135,9 +143,13 @@ const Events = () => {
                       fullWidth 
                       sx={{ bgcolor: '#06b6d4' }}
                       onClick={() => handleRegister(event)}
-                      endIcon={event.applyUrl ? <OpenInNewIcon /> : null}
+                      endIcon={!event.allowInternalApplication && (event.applyUrl || event.website) ? <OpenInNewIcon /> : null}
                     >
-                      {event.applyUrl ? 'Register (External)' : 'Register / RSVP'}
+                      {event.allowInternalApplication 
+                        ? 'Register / RSVP' 
+                        : event.applyUrl || event.website 
+                          ? 'Register (External)' 
+                          : 'Register / RSVP'}
                     </Button>
                   </Box>
                 </Card>
@@ -146,6 +158,17 @@ const Events = () => {
           </Grid>
         )}
       </Container>
+
+      {/* Quick Apply Dialog */}
+      <QuickApplyDialog
+        open={showApplyDialog}
+        onClose={() => {
+          setShowApplyDialog(false)
+          setSelectedEvent(null)
+        }}
+        opportunity={selectedEvent}
+        user={user}
+      />
     </Box>
   )
 }

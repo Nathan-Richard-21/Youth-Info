@@ -187,7 +187,7 @@ const Bursaries = () => {
                       {b.imageUrl && (
                         <Box
                           component="img"
-                          src={b.imageUrl}
+                          src={b.imageUrl.startsWith('http') ? b.imageUrl : `http://localhost:5001${b.imageUrl}`}
                           alt={b.title}
                           sx={{ height: 180, objectFit: 'cover' }}
                           onError={(e) => e.target.style.display = 'none'}
