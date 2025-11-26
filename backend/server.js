@@ -9,7 +9,8 @@ dotenv.config();
 console.log('🔑 JWT_SECRET loaded:', process.env.JWT_SECRET ? `${process.env.JWT_SECRET.substring(0, 10)}...` : 'NOT SET!');
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increase limit and ensure JSON parsing
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Handle URL-encoded data
 // DISABLED express-fileupload - Using multer in upload routes instead
 // app.use(fileUpload({
 //   createParentPath: true,

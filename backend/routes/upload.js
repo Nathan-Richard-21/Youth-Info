@@ -32,12 +32,41 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+const documentFilter = (req, file, cb) => {
+  // Accept documents and images
+  const allowedTypes = [
+    'image/',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain'
+  ];
+  
+  const isAllowed = allowedTypes.some(type => file.mimetype.startsWith(type) || file.mimetype === type);
+  
+  if (isAllowed) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only documents (PDF, Word, Excel, images, text) are allowed!'), false);
+  }
+};
+
 const upload = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB max file size
   },
   fileFilter: fileFilter
+});
+
+const documentUpload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max file size
+  },
+  fileFilter: documentFilter
 });
 
 // @route   POST /api/upload/image
@@ -60,6 +89,32 @@ router.post('/image', auth, upload.single('image'), (req, res) => {
   } catch (err) {
     console.error('Upload error:', err);
     res.status(500).json({ message: 'Error uploading image', error: err.message });
+  }
+});
+
+// @route   POST /api/upload/document
+// @desc    Upload single document (PDF, Word, Excel, images, text)
+// @access  Private (authenticated users)
+router.post('/document', auth, documentUpload.single('document'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Return the file URL
+    const fileUrl = `/uploads/${req.file.filename}`;
+    
+    res.status(200).json({
+      message: 'Document uploaded successfully',
+      url: fileUrl,
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    });
+  } catch (err) {
+    console.error('Upload error:', err);
+    res.status(500).json({ message: 'Error uploading document', error: err.message });
   }
 });
 

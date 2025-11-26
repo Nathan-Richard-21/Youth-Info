@@ -23,15 +23,15 @@ const ApplicationSchema = new mongoose.Schema({
   coverLetter: { type: String },
   resume: { type: String }, // URL to uploaded resume
   documents: [{ 
-    name: String, 
-    url: String, 
-    type: String 
+    name: { type: String }, 
+    url: { type: String }, 
+    type: { type: String }
   }],
   
   // Additional fields
   answers: [{ 
-    question: String, 
-    answer: String 
+    question: { type: String }, 
+    answer: { type: String }
   }],
   
   // Tracking
