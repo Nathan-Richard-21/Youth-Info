@@ -22,7 +22,9 @@ const auth = async (req, res, next) => {
     }
     
     // Verify token
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const jwtSecret = process.env.JWT_SECRET || 'secret';
+    console.log('🔑 Using JWT_SECRET:', jwtSecret ? `${jwtSecret.substring(0, 10)}...` : 'UNDEFINED');
+    const payload = jwt.verify(token, jwtSecret);
     console.log('✅ Token verified. Decoded payload:', JSON.stringify(payload, null, 2));
     
     // Support BOTH token formats: {userId: ...} and {id: ...}

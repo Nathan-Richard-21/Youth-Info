@@ -9,13 +9,18 @@ import {
 import { 
   Person, Email, Phone, LocationOn, School, Work, Edit, Save, 
   Cancel, Notifications, Security, Dashboard, History, Bookmark,
-  TrendingUp, Business, Settings, Delete, OpenInNew, Chat, Send
+  TrendingUp, Business, Settings, Delete, OpenInNew, Chat, Send, AutoAwesome
 } from '@mui/icons-material'
 import api from '../api'
 import { useLanguage } from '../context/LanguageContext'
 import { useNavigate } from 'react-router-dom'
+import AICareerAssistant from '../components/AICareerAssistant'
+
+// 🟢🟢🟢 PROFILENEW.JSX - UPDATED WITH AI CAREER ASSISTANT 🟢🟢🟢
+console.log('🟢🟢🟢 ProfileNew.jsx LOADED - AI Career Assistant Integration 🟢🟢🟢')
 
 const Profile = () => {
+  console.log('🟢 ProfileNew component rendering')
   const { content } = useLanguage()
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
@@ -200,7 +205,10 @@ const Profile = () => {
         <Paper elevation={0} sx={{ mb: 3, borderRadius: 3 }}>
           <Tabs 
             value={activeTab} 
-            onChange={(e, v) => setActiveTab(v)}
+            onChange={(e, v) => {
+              console.log('🔵 Tab changed to:', v)
+              setActiveTab(v)
+            }}
             variant="scrollable"
             scrollButtons="auto"
           >
@@ -208,10 +216,23 @@ const Profile = () => {
             <Tab icon={<Person />} label="Profile Info" />
             <Tab icon={<Bookmark />} label={`Saved (${savedOpportunities.length})`} />
             <Tab icon={<TrendingUp />} label={`Applications (${applications.length})`} />
-            <Tab icon={<Chat />} label="AI Chatbot" />
+            <Tab 
+              icon={<AutoAwesome />} 
+              label="✨ AI Career Assistant" 
+              sx={{ 
+                fontWeight: 700,
+                color: 'primary.main',
+                '&.Mui-selected': {
+                  color: 'primary.main',
+                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))'
+                }
+              }}
+            />
             <Tab icon={<Settings />} label="Settings" />
           </Tabs>
         </Paper>
+
+        {console.log('🔵 Current activeTab:', activeTab)}
 
         {/* Tab Content */}
         {activeTab === 0 && (
@@ -518,91 +539,26 @@ const Profile = () => {
           </Paper>
         )}
 
+        {/* AI Career Assistant Tab - REPLACED OLD CHATBOT */}
         {activeTab === 4 && (
-          <Paper elevation={0} sx={{ p: 4, borderRadius: 3, height: '70vh', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h5" fontWeight={600} gutterBottom>
-              AI Career Assistant 🤖
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Powered by GPT - Ask me anything about careers, bursaries, or opportunities!
-            </Typography>
-            <Divider sx={{ my: 2 }} />
+          <Grid container spacing={3}>
+            {console.log('🟢🟢🟢 AI CAREER ASSISTANT TAB RENDERING! 🟢🟢🟢')}
+            <Grid item xs={12}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                <Typography variant="h5" fontWeight={700} color="white" gutterBottom>
+                  🚀 AI Career Assistant - NEW & IMPROVED!
+                </Typography>
+                <Typography variant="body1" color="white" sx={{ opacity: 0.95 }}>
+                  Click the button below to access 10 powerful career tools: CV creation, interview prep, study plans, and more!
+                </Typography>
+              </Paper>
+            </Grid>
             
-            {/* Chat Messages */}
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', mb: 2, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
-              {chatMessages.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <Chat sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="h6" color="text.secondary">
-                    Start a conversation!
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Ask about bursaries, careers, CV tips, interview advice, and more.
-                  </Typography>
-                </Box>
-              ) : (
-                chatMessages.map((msg, idx) => (
-                  <Box
-                    key={idx}
-                    sx={{
-                      mb: 2,
-                      display: 'flex',
-                      justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start'
-                    }}
-                  >
-                    <Paper
-                      elevation={1}
-                      sx={{
-                        p: 2,
-                        maxWidth: '70%',
-                        bgcolor: msg.role === 'user' ? 'primary.main' : 'white',
-                        color: msg.role === 'user' ? 'white' : 'text.primary'
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                        {msg.content}
-                      </Typography>
-                    </Paper>
-                  </Box>
-                ))
-              )}
-              {chatLoading && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircularProgress size={20} />
-                  <Typography variant="body2" color="text.secondary">
-                    AI is thinking...
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-
-            {/* Chat Input */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                fullWidth
-                multiline
-                maxRows={3}
-                placeholder="Ask me anything about careers and opportunities..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSendMessage()
-                  }
-                }}
-                disabled={chatLoading}
-              />
-              <Button
-                variant="contained"
-                onClick={handleSendMessage}
-                disabled={!chatInput.trim() || chatLoading}
-                sx={{ minWidth: 100 }}
-              >
-                <Send />
-              </Button>
-            </Box>
-          </Paper>
+            <Grid item xs={12}>
+              {console.log('🟢 Rendering AICareerAssistant component with user:', user)}
+              <AICareerAssistant user={user} />
+            </Grid>
+          </Grid>
         )}
 
         {activeTab === 5 && (

@@ -21,7 +21,7 @@ const auth = async (req, res, next) => {
     console.log('🔑 Token received (first 20 chars):', token.substring(0, 20));
     
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
     console.log('✅ Token verified. Decoded payload:', JSON.stringify(decoded, null, 2));
     
     // Support both old and new token formats

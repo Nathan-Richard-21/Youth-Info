@@ -38,7 +38,7 @@ export const conversationState = {
 
   // Check if user is answering a follow-up question
   isInFlow() {
-    return this.currentFlow !== null && this.currentStep > 0;
+    return this.currentFlow !== null && this.currentStep >= 1;
   },
 
   // Move to next step in conversation
@@ -488,7 +488,6 @@ export const generateSmartResponse = (userMessage, currentPage = 'home') => {
   state.setCurrentPage(currentPage);
 
   // ===== PAGE-SPECIFIC QUESTION DETECTION =====
-  // Check if user is asking about the current page they're on
   const pageKeywords = {
     home: ['this page', 'home page', 'main page', 'where am i', 'what is this'],
     opportunities: ['opportunities', 'this page', 'what opportunities', 'how to apply here'],
@@ -515,15 +514,10 @@ export const generateSmartResponse = (userMessage, currentPage = 'home') => {
     };
   }
 
-  // Handle confirmation responses (yes, yeah, sure, ok)
-  const confirmations = ['yes', 'yeah', 'yep', 'sure', 'ok', 'okay', 'alright', 'continue', 'go ahead'];
-  const isConfirmation = confirmations.some(conf => lowerMsg === conf || lowerMsg.startsWith(conf));
-
-  // Handle negations (no, nah, not really)
+  // Handle negations (no, nah, not really) - cancel flow
   const negations = ['no', 'nah', 'nope', 'not really', 'cancel', 'stop'];
   const isNegation = negations.some(neg => lowerMsg === neg || lowerMsg.startsWith(neg));
 
-  // If user wants to cancel
   if (isNegation && state.isInFlow()) {
     state.reset();
     return {
@@ -541,21 +535,11 @@ What would you like to know about?`,
     };
   }
 
-  // Check if we're in an active conversation flow
+  // ===== HANDLE ACTIVE CONVERSATION FLOW =====
   if (state.isInFlow()) {
     const flow = conversationFlows[state.currentFlow];
     const currentStepIndex = state.currentStep - 1;
     const currentStepData = flow.steps[currentStepIndex];
-
-    // If user just confirmed to continue (after seeing intro)
-    if (isConfirmation && currentStepIndex === -1) {
-      state.nextStep();
-      return {
-        response: flow.steps[0].question,
-        flow: state.currentFlow,
-        step: state.currentStep
-      };
-    }
 
     // Validate and store the answer
     if (currentStepData && currentStepData.validate(userMessage)) {
@@ -585,41 +569,43 @@ What would you like to know about?`,
         };
       }
     } else {
-      // Invalid answer
+      // Invalid answer - ask the question again
       return {
-        response: `I didn't quite get that. ${currentStepData.question}`,
+        response: `I didn't quite get that. Let me ask again:\n\n${currentStepData.question}`,
         flow: state.currentFlow,
         step: state.currentStep
       };
     }
   }
 
+  // ===== START NEW CONVERSATION FLOW =====
   // Identify intent for new conversations
   const intent = intentRecognition.identify(userMessage);
 
   if (intent && conversationFlows[intent]) {
     // Start new conversation flow
     state.currentFlow = intent;
-    state.currentStep = 0;
+    state.currentStep = 1; // Start at step 1 (first question)
     state.collectedData = {};
 
     const flow = conversationFlows[intent];
     
+    // Return intro + first question immediately
     return {
-      response: `${flow.intro}\n\n**Ready to start?** (Just say 'yes' when you're ready!)`,
+      response: `${flow.intro}\n\n${flow.steps[0].question}`,
       flow: intent,
-      step: 0
+      step: 1
     };
   }
 
-  // If no intent matched and not in flow, ask for clarification
+  // ===== NO INTENT MATCHED - ASK FOR CLARIFICATION =====
   return {
     response: `I want to make sure I give you the right information! Are you asking about:
 
+🎓 **Courses and training**
 🚀 **Starting your own business**
-🎓 **Funding for your studies (NSFAS)**
+💰 **Funding for your studies (NSFAS)**
 💼 **Finding a job or learnership**
-📚 **Courses and training**
 🏥 **Health or medical concerns**
 📄 **Help with CV or Resume**
 

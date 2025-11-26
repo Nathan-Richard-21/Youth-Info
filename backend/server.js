@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 
 dotenv.config();
+console.log('🔑 JWT_SECRET loaded:', process.env.JWT_SECRET ? `${process.env.JWT_SECRET.substring(0, 10)}...` : 'NOT SET!');
 const app = express();
 app.use(cors());
 app.use(express.json());

@@ -25,7 +25,7 @@ const demoOpportunities = [
     location: 'National',
     eligibility: 'South African citizens with household income below R350,000 per year',
     requirements: ['South African ID', 'Matric certificate', 'Proof of household income', 'University acceptance letter'],
-    deadline: '2026-01-31',
+    closingDate: '2026-01-31',
     amount: 'Full funding',
     fundingType: 'Full',
     imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
@@ -64,7 +64,7 @@ const demoOpportunities = [
     eligibility: 'Grade 12 certificate, ages 18-35',
     requirements: ['Matric with Math and Science', 'South African ID', 'Clean criminal record'],
     startDate: '2026-02-01',
-    deadline: '2026-01-15',
+    closingDate: '2026-01-15',
     imageUrl: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800',
     tags: ['learnership', 'artisan', 'technical', 'east-london'],
     status: 'approved',
@@ -81,7 +81,7 @@ const demoOpportunities = [
     location: 'Eastern Cape',
     eligibility: 'South African youth aged 18-35 with a viable business idea',
     requirements: ['Business plan', 'SA ID', 'Proof of address', 'Bank statements'],
-    deadline: '2026-03-31',
+    closingDate: '2026-03-31',
     amount: 'Up to R100,000',
     fundingType: 'Grant',
     imageUrl: 'https://images.unsplash.com/photo-1556742111-a301076d9d18?w=800',
@@ -121,7 +121,7 @@ const demoOpportunities = [
     salary: 'R5,000 stipend',
     experience: '0-1 years',
     startDate: '2026-02-01',
-    deadline: '2026-01-20',
+    closingDate: '2026-01-20',
     imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800',
     tags: ['internship', 'marketing', 'digital', 'social-media'],
     status: 'approved'
@@ -137,7 +137,7 @@ const demoOpportunities = [
     location: 'Grahamstown',
     eligibility: 'Excellent academic record, admission to postgraduate programme',
     requirements: ['Honours degree', 'Research proposal', 'Academic transcripts', 'Reference letters'],
-    deadline: '2026-02-28',
+    closingDate: '2026-02-28',
     amount: 'R80,000 - R150,000 per year',
     fundingType: 'Full',
     imageUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800',
@@ -155,7 +155,7 @@ const demoOpportunities = [
     eligibility: 'Unemployed youth aged 18-35 residing in Buffalo City',
     requirements: ['SA ID', 'Matric certificate', 'Proof of residence', 'No previous municipal employment'],
     startDate: '2026-04-01',
-    deadline: '2026-02-15',
+    closingDate: '2026-02-15',
     salary: 'R3,500 monthly stipend',
     imageUrl: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800',
     tags: ['career', 'youth', 'government', 'buffalo-city', 'temporary'],
@@ -209,7 +209,7 @@ const demoOpportunities = [
     location: 'Boardwalk Convention Centre, Port Elizabeth',
     startDate: '2026-02-15',
     endDate: '2026-02-15',
-    deadline: '2026-02-10',
+    closingDate: '2026-02-10',
     eligibility: 'Youth aged 18-35',
     requirements: ['ID document', 'CV copies', 'Professional attire recommended'],
     imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
@@ -228,7 +228,7 @@ const demoOpportunities = [
     location: 'East London ICC',
     startDate: '2026-03-10',
     endDate: '2026-03-14',
-    deadline: '2026-02-28',
+    closingDate: '2026-02-28',
     eligibility: 'Ages 18-35 with business idea',
     requirements: ['Business idea pitch', 'Commitment to attend all 5 days'],
     imageUrl: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800',
@@ -246,7 +246,7 @@ const demoOpportunities = [
     location: 'ICC East London',
     startDate: '2026-04-20',
     endDate: '2026-04-21',
-    deadline: '2026-04-15',
+    closingDate: '2026-04-15',
     eligibility: 'Open to all',
     requirements: ['Online registration'],
     imageUrl: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800',
@@ -265,7 +265,7 @@ const demoOpportunities = [
     location: 'South Africa',
     eligibility: 'African citizens, under 30 years, exceptional academic record',
     requirements: ['Honours degree or equivalent', 'Leadership track record', 'Academic transcripts', 'Reference letters', 'Motivation essay'],
-    deadline: '2026-02-28',
+    closingDate: '2026-02-28',
     amount: 'Full scholarship + stipend',
     fundingType: 'Full',
     imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
@@ -284,7 +284,7 @@ const demoOpportunities = [
     location: 'National',
     eligibility: 'SA citizens, household income below R350k',
     requirements: ['SA ID', 'TVET acceptance letter', 'Proof of household income'],
-    deadline: '2026-01-31',
+    closingDate: '2026-01-31',
     amount: 'Full funding package',
     fundingType: 'Full',
     imageUrl: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800',
@@ -325,7 +325,7 @@ const demoOpportunities = [
     salary: 'R12,000 + benefits',
     experience: 'Graduate',
     startDate: '2026-03-01',
-    deadline: '2026-02-15',
+    closingDate: '2026-02-15',
     imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
     tags: ['career', 'graduate', 'retail', 'management', 'training'],
     status: 'approved'
@@ -342,7 +342,7 @@ const demoOpportunities = [
     eligibility: 'Matric with Maths and Science',
     requirements: ['Grade 12', 'Maths & Science pass', 'Driver\'s license (learner acceptable)', 'Passion for vehicles'],
     startDate: '2026-02-01',
-    deadline: '2026-01-20',
+    closingDate: '2026-01-20',
     imageUrl: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800',
     tags: ['learnership', 'automotive', 'mechanic', 'technical', 'artisan'],
     status: 'approved'
@@ -359,7 +359,7 @@ const demoOpportunities = [
     location: 'Eastern Cape',
     eligibility: 'Registered SMEs, black-owned businesses',
     requirements: ['Business registration', 'Business plan', 'Financial statements', 'Market analysis'],
-    deadline: '2026-03-31',
+    closingDate: '2026-03-31',
     amount: 'Up to R200,000',
     fundingType: 'Co-funding',
     imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800',
@@ -427,7 +427,9 @@ async function seedDatabase() {
         ...opp,
         createdBy: adminUser._id,
         views: Math.floor(Math.random() * 500) + 50,
-        applications: Math.floor(Math.random() * 50)
+        applications: Math.floor(Math.random() * 50),
+        // Add default closingDate if not present (for success stories, etc.)
+        closingDate: opp.closingDate || opp.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
       }))
     );
     
@@ -578,3 +580,4 @@ async function seedDatabase() {
 
 // Run the seed
 seedDatabase();
+

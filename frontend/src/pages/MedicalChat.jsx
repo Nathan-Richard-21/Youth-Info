@@ -137,7 +137,7 @@ const generateCourseRecommendations = (profile) => {
 const MedicalChat = () => {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([
-    { from: 'bot', text: 'Welcome to Eastern Cape Youth Health Chatbot! 🏥\n\nI can help with:\n\n• Emergency contacts\n• HIV & TB information\n• Pregnancy & reproductive health\n• Mental health support\n• Substance abuse help\n• Vaccinations\n• Finding clinics & hospitals\n• Health rights & abuse support\n• Course guidance & career help\n\nWhat would you like to know about?' }
+    { from: 'bot', text: 'Welcome to Eastern Cape Youth Health Chatbot! 🏥\n\nI can help with:\n\n• Emergency contacts\n• HIV & TB information\n• Pregnancy & reproductive health\n• Mental health support\n• Substance abuse help\n• Vaccinations\n• Finding clinics & hospitals\n• Health rights & abuse support\n\nWhat would you like to know about?' }
   ])
   const [loading, setLoading] = useState(false)
   const [courseFlow, setCourseFlow] = useState(null) // Track course guidance flow
