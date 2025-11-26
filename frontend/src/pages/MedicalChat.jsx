@@ -151,7 +151,7 @@ const MedicalChat = () => {
     'Mental health',
     'Find a clinic', 
     'My health rights',
-    'What courses should I apply to?'
+    'Substance abuse help'
   ]
 
   useEffect(() => {
