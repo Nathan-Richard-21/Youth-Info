@@ -488,21 +488,46 @@ const StakeholderDashboard = () => {
                 )}
 
                 {/* Custom Answers */}
-                {selectedApplication.answers && Object.keys(selectedApplication.answers).length > 0 && (
+                {selectedApplication.answers && selectedApplication.answers.length > 0 && (
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="h6" gutterBottom fontWeight={600}>
                       Question Answers
                     </Typography>
-                    {Object.entries(selectedApplication.answers).map(([question, answer], index) => (
+                    {selectedApplication.answers.map((item, index) => (
                       <Box key={index} sx={{ mb: 2 }}>
                         <Typography variant="subtitle2" fontWeight={600}>
-                          Q: {question}
+                          Q: {item.question}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                          A: {answer}
+                          A: {item.answer}
                         </Typography>
                       </Box>
                     ))}
+                  </Box>
+                )}
+
+                {/* Additional Documents */}
+                {selectedApplication.documents && selectedApplication.documents.length > 0 && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" gutterBottom fontWeight={600}>
+                      Additional Documents
+                    </Typography>
+                    <Grid container spacing={1}>
+                      {selectedApplication.documents.map((doc, index) => (
+                        <Grid item xs={12} sm={6} key={index}>
+                          <Button
+                            variant="outlined"
+                            startIcon={<GetApp />}
+                            href={`http://localhost:5001${doc.url}`}
+                            target="_blank"
+                            fullWidth
+                            size="small"
+                          >
+                            {doc.name} ({doc.type})
+                          </Button>
+                        </Grid>
+                      ))}
+                    </Grid>
                   </Box>
                 )}
 

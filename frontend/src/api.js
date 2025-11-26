@@ -7,6 +7,9 @@ api.interceptors.request.use(cfg => {
   const token = localStorage.getItem('token')
   console.log('🚀 API REQUEST:', cfg.method.toUpperCase(), cfg.url)
   console.log('🔑 Token from localStorage:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN')
+  console.log('📦 Request data type:', typeof cfg.data)
+  console.log('📦 Request data:', cfg.data)
+  console.log('📋 Request headers:', cfg.headers)
   
   if (token) {
     cfg.headers.Authorization = `Bearer ${token}`

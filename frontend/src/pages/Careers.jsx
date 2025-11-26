@@ -8,6 +8,7 @@ import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
+import QuickApplyDialog from '../components/QuickApplyDialog'
 
 const Careers = () => {
   const [subcategory, setSubcategory] = useState('')
@@ -17,6 +18,9 @@ const Careers = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [savedCareers, setSavedCareers] = useState(new Set())
+  const [showApplyDialog, setShowApplyDialog] = useState(false)
+  const [selectedCareer, setSelectedCareer] = useState(null)
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
   const token = localStorage.getItem('token')
 
   useEffect(() => {
@@ -84,13 +88,22 @@ const Careers = () => {
       return
     }
     
-    // If job has external application URL, open it
-    if (job.applyUrl) {
+    // Check if opportunity allows internal application (our platform)
+    if (job.allowInternalApplication) {
+      setSelectedCareer(job)
+      setShowApplyDialog(true)
+    }
+    // If has external URL, redirect there
+    else if (job.applyUrl) {
       window.open(job.applyUrl, '_blank')
-    } else if (job.website) {
+    } 
+    // Fallback to website if available
+    else if (job.website) {
       window.open(job.website, '_blank')
-    } else {
-      alert('No application link available')
+    } 
+    // No application method available
+    else {
+      alert('No application method available for this opportunity')
     }
   }
 
@@ -288,6 +301,17 @@ const Careers = () => {
           </Box>
         </Container>
       </Box>
+
+      {/* Quick Apply Dialog */}
+      <QuickApplyDialog
+        open={showApplyDialog}
+        onClose={() => {
+          setShowApplyDialog(false)
+          setSelectedCareer(null)
+        }}
+        opportunity={selectedCareer}
+        user={user}
+      />
     </Box>
   )
 }

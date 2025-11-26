@@ -24,6 +24,11 @@ const QuickApplyDialog = ({ open, onClose, opportunity, user }) => {
 
   const steps = ['Review Info', 'Answer Questions', 'Submit'];
 
+  // Guard: Don't render if no opportunity
+  if (!opportunity) {
+    return null;
+  }
+
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -39,20 +44,22 @@ const QuickApplyDialog = ({ open, onClose, opportunity, user }) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file size
+    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       setError('File size must be less than 5MB');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('document', file);
-    formData.append('documentName', docName);
-
     try {
-      const response = await api.post('/applications/upload-document', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const uploadFormData = new FormData();
+      uploadFormData.append('document', file); // Backend expects 'document' field
+
+      console.log('📤 Uploading document:', file.name, file.type, file.size);
+
+      // Use the document upload endpoint (accepts PDFs, Word, Excel, images, text)
+      const response = await api.post('/upload/document', uploadFormData);
+
+      console.log('📥 Upload response:', response.data);
 
       setFormData(prev => ({
         ...prev,
@@ -62,7 +69,8 @@ const QuickApplyDialog = ({ open, onClose, opportunity, user }) => {
         ]
       }));
     } catch (err) {
-      setError('Failed to upload document');
+      console.error('Document upload error:', err);
+      setError(err.response?.data?.message || 'Failed to upload document');
     }
   };
 
@@ -106,15 +114,38 @@ const QuickApplyDialog = ({ open, onClose, opportunity, user }) => {
         };
       });
 
+      // Prepare documents array - format for backend
+      const documentsArray = formData.additionalDocuments.map(doc => ({
+        name: doc.name,
+        url: doc.url,
+        type: doc.fileName.split('.').pop() // Get file extension as type
+      }));
+
+      console.log('🔍 DEBUG: formData.additionalDocuments:', formData.additionalDocuments);
+      console.log('🔍 DEBUG: documentsArray after mapping:', documentsArray);
+      console.log('🔍 DEBUG: documentsArray is Array?', Array.isArray(documentsArray));
+      console.log('🔍 DEBUG: documentsArray length:', documentsArray.length);
+      console.log('🔍 DEBUG: documentsArray[0] type:', typeof documentsArray[0]);
+
       const applicationData = {
         opportunity: opportunity._id,
         coverLetter: formData.coverLetter,
         resume: user.cvUrl, // Auto-attach saved CV
         answers: answersArray,
-        documents: formData.additionalDocuments
+        documents: documentsArray
       };
 
-      await api.post('/applications', applicationData);
+      console.log('📤 Submitting application:', applicationData);
+      console.log('📋 applicationData.documents is Array?', Array.isArray(applicationData.documents));
+      console.log('📋 applicationData.documents:', applicationData.documents);
+      console.log('📋 Full payload (stringified):', JSON.stringify(applicationData, null, 2));
+      console.log('📋 typeof applicationData:', typeof applicationData);
+      console.log('📋 applicationData constructor:', applicationData.constructor.name);
+
+      // Send without explicit Content-Type - let axios handle it automatically
+      const response = await api.post('/applications', applicationData);
+      
+      console.log('✅ Application submitted successfully:', response.data);
       setSuccess(true);
 
       setTimeout(() => {
@@ -122,6 +153,7 @@ const QuickApplyDialog = ({ open, onClose, opportunity, user }) => {
         window.location.reload(); // Refresh to show new application
       }, 2000);
     } catch (err) {
+      console.error('❌ Application submission error:', err);
       setError(err.response?.data?.message || 'Failed to submit application');
     } finally {
       setLoading(false);

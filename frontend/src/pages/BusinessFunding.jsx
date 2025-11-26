@@ -8,6 +8,7 @@ import EventIcon from '@mui/icons-material/Event'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
 import { formatDate, isExpiringSoon } from '../utils/dateUtils'
+import QuickApplyDialog from '../components/QuickApplyDialog'
 
 const BusinessFunding = () => {
   const [tabValue, setTabValue] = useState(0)
@@ -15,6 +16,9 @@ const BusinessFunding = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(new Set())
+  const [showApplyDialog, setShowApplyDialog] = useState(false)
+  const [selectedFunding, setSelectedFunding] = useState(null)
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
   const token = localStorage.getItem('token')
 
   useEffect(() => {
@@ -61,18 +65,22 @@ const BusinessFunding = () => {
   const handleApply = async (opportunity) => {
     if (!token) return alert('Please login')
     
-    // If external URL exists, open it
-    if (opportunity.applyUrl) {
-      window.open(opportunity.applyUrl, '_blank')
-      return
+    // Check if opportunity allows internal application (our platform)
+    if (opportunity.allowInternalApplication) {
+      setSelectedFunding(opportunity)
+      setShowApplyDialog(true)
     }
-    
-    // Otherwise submit internal application
-    try {
-      await api.post(`/opportunities/${opportunity._id}/apply`, { coverLetter: 'Interested in funding', answers: [] })
-      alert('Application submitted!')
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed')
+    // If has external URL, redirect there
+    else if (opportunity.applyUrl) {
+      window.open(opportunity.applyUrl, '_blank')
+    } 
+    // Fallback to website if available
+    else if (opportunity.website) {
+      window.open(opportunity.website, '_blank')
+    } 
+    // No application method available
+    else {
+      alert('No application method available for this opportunity')
     }
   }
 
@@ -200,6 +208,17 @@ const BusinessFunding = () => {
           </Box>
         </Container>
       </Box>
+
+      {/* Quick Apply Dialog */}
+      <QuickApplyDialog
+        open={showApplyDialog}
+        onClose={() => {
+          setShowApplyDialog(false)
+          setSelectedFunding(null)
+        }}
+        opportunity={selectedFunding}
+        user={user}
+      />
     </Box>
   )
 }

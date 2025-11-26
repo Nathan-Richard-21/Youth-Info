@@ -8,12 +8,16 @@ import EventIcon from '@mui/icons-material/Event'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
 import { formatDate, isExpiringSoon } from '../utils/dateUtils'
+import QuickApplyDialog from '../components/QuickApplyDialog'
 
 const Learnerships = () => {
   const [learnerships, setLearnerships] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(new Set())
+  const [showApplyDialog, setShowApplyDialog] = useState(false)
+  const [selectedLearnership, setSelectedLearnership] = useState(null)
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
   const token = localStorage.getItem('token')
 
   useEffect(() => {
@@ -60,18 +64,22 @@ const Learnerships = () => {
   const handleApply = async (learnership) => {
     if (!token) return alert('Please login')
     
-    // If external URL exists, open it
-    if (learnership.applyUrl) {
-      window.open(learnership.applyUrl, '_blank')
-      return
+    // Check if opportunity allows internal application (our platform)
+    if (learnership.allowInternalApplication) {
+      setSelectedLearnership(learnership)
+      setShowApplyDialog(true)
     }
-    
-    // Otherwise submit internal application
-    try {
-      await api.post(`/opportunities/${learnership._id}/apply`, { coverLetter: 'Interested', answers: [] })
-      alert('Application submitted!')
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed')
+    // If has external URL, redirect there
+    else if (learnership.applyUrl) {
+      window.open(learnership.applyUrl, '_blank')
+    } 
+    // Fallback to website if available
+    else if (learnership.website) {
+      window.open(learnership.website, '_blank')
+    } 
+    // No application method available
+    else {
+      alert('No application method available for this opportunity')
     }
   }
 
@@ -189,6 +197,17 @@ const Learnerships = () => {
           <Button variant="contained" color="warning">Browse Forums</Button>
         </Container>
       </Box>
+
+      {/* Quick Apply Dialog */}
+      <QuickApplyDialog
+        open={showApplyDialog}
+        onClose={() => {
+          setShowApplyDialog(false)
+          setSelectedLearnership(null)
+        }}
+        opportunity={selectedLearnership}
+        user={user}
+      />
     </Box>
   )
 }

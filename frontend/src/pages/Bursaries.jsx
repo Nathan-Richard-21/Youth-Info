@@ -8,6 +8,7 @@ import EventIcon from '@mui/icons-material/Event'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
 import { formatDate, isExpiringSoon } from '../utils/dateUtils'
+import QuickApplyDialog from '../components/QuickApplyDialog'
 
 const Bursaries = () => {
   const [search, setSearch] = useState('')
@@ -17,6 +18,8 @@ const Bursaries = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [savedBursaries, setSavedBursaries] = useState(new Set())
+  const [showApplyDialog, setShowApplyDialog] = useState(false)
+  const [selectedBursary, setSelectedBursary] = useState(null)
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const token = localStorage.getItem('token')
 
@@ -88,13 +91,22 @@ const Bursaries = () => {
       return
     }
     
-    // If bursary has external application URL, open it
-    if (bursary.applyUrl) {
+    // Check if opportunity allows internal application (our platform)
+    if (bursary.allowInternalApplication) {
+      setSelectedBursary(bursary)
+      setShowApplyDialog(true)
+    }
+    // If has external URL, redirect there
+    else if (bursary.applyUrl) {
       window.open(bursary.applyUrl, '_blank')
-    } else if (bursary.website) {
+    } 
+    // Fallback to website if available
+    else if (bursary.website) {
       window.open(bursary.website, '_blank')
-    } else {
-      alert('No application link available')
+    } 
+    // No application method available
+    else {
+      alert('No application method available for this opportunity')
     }
   }
 
@@ -269,6 +281,17 @@ const Bursaries = () => {
           </Box>
         </Container>
       </Box>
+
+      {/* Quick Apply Dialog */}
+      <QuickApplyDialog
+        open={showApplyDialog}
+        onClose={() => {
+          setShowApplyDialog(false)
+          setSelectedBursary(null)
+        }}
+        opportunity={selectedBursary}
+        user={user}
+      />
     </Box>
   )
 }
