@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Button, TextField, MenuItem, Chip, Paper, CircularProgress, Alert } from '@mui/material'
+import { Link } from 'react-router-dom'
 import SchoolIcon from '@mui/icons-material/School'
 import SearchIcon from '@mui/icons-material/Search'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
@@ -270,14 +271,30 @@ const Bursaries = () => {
       <Box sx={{ bgcolor: '#f0fdf4', py: 6 }}>
         <Container maxWidth="md">
           <Typography variant="h5" fontWeight={600} gutterBottom textAlign="center">
-            📚 Need Help with Applications?
+            🤖 Need Help with Applications?
           </Typography>
           <Typography variant="body1" textAlign="center" color="text.secondary" mb={3}>
-            Check out our application tips and resume builder to improve your chances
+            Get AI-powered assistance with CVs, motivational letters, and interview preparation
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-            <Button variant="outlined" color="success">Application Tips</Button>
-            <Button variant="contained" color="success">Resume Builder</Button>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Button 
+              variant="outlined" 
+              color="success"
+              component={Link}
+              to="/profile"
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              ✨ AI Career Assistant
+            </Button>
+            <Button 
+              variant="contained" 
+              color="success"
+              component={Link}
+              to="/coach"
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              🎓 Career Coach Videos
+            </Button>
           </Box>
         </Container>
       </Box>

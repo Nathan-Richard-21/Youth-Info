@@ -11,6 +11,7 @@ import {
   Cancel, AccessTime, TrendingUp, Description, GetApp, Notes, Work
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import api from '../api'
 
 const StakeholderDashboard = () => {
@@ -27,6 +28,7 @@ const StakeholderDashboard = () => {
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [chartView, setChartView] = useState('pie') // 'pie' or 'bar'
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
@@ -220,6 +222,192 @@ const StakeholderDashboard = () => {
                     color="success"
                     sx={{ mt: 1 }}
                   />
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* Charts Section */}
+        {analytics && analytics.totalApplications > 0 && (
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {/* Application Status Distribution */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" fontWeight={600}>
+                      📊 Application Status Distribution
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant={chartView === 'pie' ? 'contained' : 'outlined'}
+                        onClick={() => setChartView('pie')}
+                      >
+                        Pie
+                      </Button>
+                      <Button
+                        size="small"
+                        variant={chartView === 'bar' ? 'contained' : 'outlined'}
+                        onClick={() => setChartView('bar')}
+                      >
+                        Bar
+                      </Button>
+                    </Box>
+                  </Box>
+                  
+                  {analytics.statusBreakdown ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      {chartView === 'pie' ? (
+                        <PieChart>
+                          <Pie
+                            data={Object.entries(analytics.statusBreakdown || {})
+                              .map(([key, value]) => ({
+                                name: key.charAt(0).toUpperCase() + key.slice(1).replace('-', ' '),
+                                value: value || 0
+                              }))
+                              .filter(item => item.value > 0)}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent, value }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                            outerRadius={90}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {Object.entries(analytics.statusBreakdown || {})
+                              .filter(([key, value]) => value > 0)
+                              .map(([key], index) => {
+                                const colors = {
+                                  'pending': '#f59e0b',
+                                  'under-review': '#0ea5e9',
+                                  'approved': '#10b981',
+                                  'rejected': '#ef4444',
+                                  'withdrawn': '#6b7280'
+                                }
+                                return <Cell key={`cell-${index}`} fill={colors[key] || '#6366f1'} />
+                              })}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      ) : (
+                        <BarChart
+                          data={Object.entries(analytics.statusBreakdown || {})
+                            .map(([key, value]) => ({
+                              name: key.charAt(0).toUpperCase() + key.slice(1).replace('-', ' '),
+                              count: value || 0
+                            }))
+                            .filter(item => item.count > 0)}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="count" name="Applications">
+                            {Object.entries(analytics.statusBreakdown || {})
+                              .filter(([key, value]) => value > 0)
+                              .map(([key], index) => {
+                                const colors = {
+                                  'pending': '#f59e0b',
+                                  'under-review': '#0ea5e9',
+                                  'approved': '#10b981',
+                                  'rejected': '#ef4444',
+                                  'withdrawn': '#6b7280'
+                                }
+                                return <Cell key={`cell-${index}`} fill={colors[key] || '#6366f1'} />
+                              })}
+                          </Bar>
+                        </BarChart>
+                      )}
+                    </ResponsiveContainer>
+                  ) : (
+                    <Alert severity="info">No application data available yet</Alert>
+                  )}
+                  
+                  <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {analytics.statusBreakdown && Object.entries(analytics.statusBreakdown).map(([key, value]) => {
+                      if (value === 0) return null;
+                      const colors = {
+                        'pending': '#f59e0b',
+                        'under-review': '#0ea5e9',
+                        'approved': '#10b981',
+                        'rejected': '#ef4444',
+                        'withdrawn': '#6b7280'
+                      }
+                      return (
+                        <Chip 
+                          key={key}
+                          label={`${key.charAt(0).toUpperCase() + key.slice(1).replace('-', ' ')}: ${value}`}
+                          size="small"
+                          sx={{ 
+                            bgcolor: `${colors[key]}20`, 
+                            color: colors[key],
+                            fontWeight: 600,
+                            borderColor: colors[key],
+                            border: '1px solid'
+                          }}
+                        />
+                      )
+                    })}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Opportunities by Category */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom fontWeight={600}>
+                    📈 Your Opportunities Overview
+                  </Typography>
+                  {myOpportunities.length > 0 ? (
+                    <>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart
+                          data={myOpportunities.reduce((acc, opp) => {
+                            const existing = acc.find(item => item.name === opp.category);
+                            if (existing) {
+                              existing.count += 1;
+                            } else {
+                              acc.push({ name: opp.category, count: 1 });
+                            }
+                            return acc;
+                          }, [])}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="count" fill="#667eea" name="Opportunities" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        {myOpportunities.reduce((acc, opp) => {
+                          if (!acc.find(item => item === opp.category)) {
+                            acc.push(opp.category);
+                          }
+                          return acc;
+                        }, []).map((category, idx) => (
+                          <Chip 
+                            key={idx} 
+                            label={`${category}: ${myOpportunities.filter(o => o.category === category).length}`}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        ))}
+                      </Box>
+                    </>
+                  ) : (
+                    <Alert severity="info">No opportunities posted yet. Click "Post New Opportunity" to get started!</Alert>
+                  )}
                 </CardContent>
               </Card>
             </Grid>

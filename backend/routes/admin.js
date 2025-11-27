@@ -9,18 +9,47 @@ const Report = require('../models/Report');
 // ============ DASHBOARD STATS ============
 router.get('/stats', auth, isAdmin, async (req, res) => {
   try {
-    const [totalUsers, totalOpportunities, pendingApprovals, activeReports] = await Promise.all([
+    const [
+      totalUsers, 
+      totalOpportunities, 
+      pendingApprovals, 
+      activeReports,
+      usersByRole,
+      opportunitiesByCategory,
+      opportunitiesByStatus,
+      recentApplications
+    ] = await Promise.all([
       User.countDocuments(),
       Opportunity.countDocuments(),
       Opportunity.countDocuments({ status: 'pending' }),
-      Report.countDocuments({ status: { $in: ['pending', 'under-review'] } })
+      Report.countDocuments({ status: { $in: ['pending', 'under-review'] } }),
+      // Users by role for pie chart
+      User.aggregate([
+        { $group: { _id: '$role', count: { $sum: 1 } } }
+      ]),
+      // Opportunities by category for pie chart
+      Opportunity.aggregate([
+        { $group: { _id: '$category', count: { $sum: 1 } } }
+      ]),
+      // Opportunities by status for pie chart
+      Opportunity.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
+      // Recent applications count (last 30 days)
+      Application.countDocuments({ 
+        createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } 
+      })
     ]);
     
     res.json({
       totalUsers,
       totalOpportunities,
       pendingApprovals,
-      activeReports
+      activeReports,
+      recentApplications,
+      usersByRole: usersByRole.map(r => ({ name: r._id || 'user', value: r.count })),
+      opportunitiesByCategory: opportunitiesByCategory.map(c => ({ name: c._id, value: c.count })),
+      opportunitiesByStatus: opportunitiesByStatus.map(s => ({ name: s._id, value: s.count }))
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

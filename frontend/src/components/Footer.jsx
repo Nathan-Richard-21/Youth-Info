@@ -364,7 +364,8 @@ const Footer = () => {
               Events
             </MuiLink>
             <MuiLink 
-              href="#" 
+              component={Link} 
+              to="/faq" 
               sx={{ 
                 color: 'rgba(255,255,255,0.85)', 
                 display: 'block', 
@@ -376,10 +377,11 @@ const Footer = () => {
                 }
               }}
             >
-              Partners
+              Help Center
             </MuiLink>
             <MuiLink 
-              href="#" 
+              component={Link} 
+              to="/faq" 
               sx={{ 
                 color: 'rgba(255,255,255,0.85)', 
                 display: 'block', 
@@ -418,7 +420,8 @@ const Footer = () => {
               About
             </Typography>
             <MuiLink 
-              href="#" 
+              component={Link} 
+              to="/faq" 
               sx={{ 
                 color: 'rgba(255,255,255,0.85)', 
                 display: 'block', 
@@ -465,7 +468,8 @@ const Footer = () => {
               Terms & Privacy
             </MuiLink>
             <MuiLink 
-              href="#" 
+              component={Link} 
+              to="/faq" 
               sx={{ 
                 color: 'rgba(255,255,255,0.85)', 
                 display: 'block', 
@@ -477,7 +481,7 @@ const Footer = () => {
                 }
               }}
             >
-              Help Center
+              Contact Support
             </MuiLink>
           </Grid>
         </Grid>

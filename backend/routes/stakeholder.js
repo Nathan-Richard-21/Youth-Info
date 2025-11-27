@@ -150,6 +150,16 @@ router.get('/analytics', auth, isStakeholder, async (req, res) => {
       rejectedApplications: applications.filter(a => a.status === 'rejected').length,
       totalViews: opportunities.reduce((sum, opp) => sum + (opp.views || 0), 0),
       
+      // Status breakdown for charts
+      statusBreakdown: {
+        pending: applications.filter(a => a.status === 'pending').length,
+        approved: applications.filter(a => a.status === 'approved').length,
+        rejected: applications.filter(a => a.status === 'rejected').length,
+        'under-review': applications.filter(a => a.status === 'under-review').length,
+        shortlisted: applications.filter(a => a.status === 'shortlisted').length,
+        interviewed: applications.filter(a => a.status === 'interviewed').length
+      },
+      
       // Application breakdown by opportunity
       opportunityBreakdown: opportunities.map(opp => ({
         id: opp._id,

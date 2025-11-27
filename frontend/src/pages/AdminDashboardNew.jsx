@@ -10,6 +10,7 @@ import {
   CheckCircle, Cancel, Visibility, Edit, Delete, Block, Check
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import api from '../api'
 
 const AdminDashboard = () => {
@@ -195,6 +196,105 @@ const AdminDashboard = () => {
                   </Box>
                   <ReportProblem sx={{ fontSize: 48, color: 'error.main', opacity: 0.3 }} />
                 </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Charts Section */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {/* Users by Role Pie Chart */}
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom fontWeight={600}>
+                  Users by Role
+                </Typography>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={stats.usersByRole || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {(stats.usersByRole || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#0047AB', '#FF8C00', '#10b981', '#f59e0b'][index % 4]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Opportunities by Category Pie Chart */}
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom fontWeight={600}>
+                  Opportunities by Category
+                </Typography>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={stats.opportunitiesByCategory || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {(stats.opportunitiesByCategory || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#0ea5e9'][index % 5]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Opportunities by Status Pie Chart */}
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom fontWeight={600}>
+                  Opportunities by Status
+                </Typography>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={stats.opportunitiesByStatus || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {(stats.opportunitiesByStatus || []).map((entry, index) => {
+                        const colors = {
+                          'approved': '#10b981',
+                          'pending': '#f59e0b',
+                          'rejected': '#ef4444',
+                          'expired': '#6b7280'
+                        }
+                        return <Cell key={`cell-${index}`} fill={colors[entry.name] || '#6366f1'} />
+                      })}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </Grid>
