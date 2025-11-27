@@ -50,10 +50,10 @@ const HomePage = () => {
   ]
 
   const features = [
-    { icon: <CheckCircleIcon sx={{ fontSize: 40 }} />, title: 'Verified Opportunities', desc: 'All opportunities are verified and up-to-date' },
-    { icon: <AutoAwesomeIcon sx={{ fontSize: 40 }} />, title: 'AI-Powered Matching', desc: 'Get personalized opportunity recommendations' },
-    { icon: <GroupsIcon sx={{ fontSize: 40 }} />, title: 'Community Support', desc: 'Connect with peers and mentors' },
-    { icon: <RocketLaunchIcon sx={{ fontSize: 40 }} />, title: 'Career Growth', desc: 'Resources to accelerate your success' }
+    { icon: <CheckCircleIcon sx={{ fontSize: 40 }} />, title: content.home.feature1Title, desc: content.home.feature1Desc },
+    { icon: <AutoAwesomeIcon sx={{ fontSize: 40 }} />, title: content.home.feature2Title, desc: content.home.feature2Desc },
+    { icon: <GroupsIcon sx={{ fontSize: 40 }} />, title: content.home.feature3Title, desc: content.home.feature3Desc },
+    { icon: <RocketLaunchIcon sx={{ fontSize: 40 }} />, title: content.home.feature4Title, desc: content.home.feature4Desc }
   ]
 
   return (
@@ -281,11 +281,11 @@ const HomePage = () => {
               WebkitTextFillColor: 'transparent'
             }}
           >
-            Why Choose ELIDZ-STP Youth Portal?
+            {content.home.whyChooseTitle}
           </Typography>
           <Box className="section-divider" sx={{ background: 'linear-gradient(90deg, #0047AB 0%, #FF8C00 100%)' }} />
           <Typography variant="h6" color="text.secondary" fontWeight={500}>
-            Your gateway to endless opportunities
+            {content.home.whyChooseSubtitle}
           </Typography>
         </Box>
         
@@ -335,14 +335,14 @@ const HomePage = () => {
           fontWeight={800} 
           sx={{ mb: 2, color: '#0047AB' }}
         >
-          Explore Opportunities & Resources
+          {content.home.categoriesTitle}
         </Typography>
         <Typography 
           variant="h6" 
           textAlign="center" 
           sx={{ mb: 6, color: '#000' }}
         >
-          Everything you need to succeed in one place
+          {content.home.categoriesSubtitle}
         </Typography>
         
         <Grid container spacing={4}>
@@ -363,10 +363,10 @@ const HomePage = () => {
             >
               <SchoolIcon sx={{ fontSize: 60, color: '#fff', mb: 2 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-                Bursaries & Scholarships
+                {content.home.bursariesCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Find funding for your education
+                {content.home.bursariesCardDesc}
               </Typography>
             </Box>
           </Grid>
@@ -388,10 +388,10 @@ const HomePage = () => {
             >
               <WorkIcon sx={{ fontSize: 60, color: '#fff', mb: 2 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-                Career Opportunities
+                {content.home.careersCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Jobs, internships & more
+                {content.home.careersCardDesc}
               </Typography>
             </Box>
           </Grid>
@@ -413,10 +413,10 @@ const HomePage = () => {
             >
               <TrendingUpIcon sx={{ fontSize: 60, color: '#fff', mb: 2 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-                Learnerships
+                {content.home.learnershipsCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Learn while you earn
+                {content.home.learnershipsCardDesc}
               </Typography>
             </Box>
           </Grid>
@@ -438,10 +438,10 @@ const HomePage = () => {
             >
               <BusinessCenterIcon sx={{ fontSize: 60, color: '#fff', mb: 2 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-                Business Funding
+                {content.home.businessCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Grants & startup support
+                {content.home.businessCardDesc}
               </Typography>
             </Box>
           </Grid>
@@ -463,10 +463,10 @@ const HomePage = () => {
             >
               <LocalHospitalIcon sx={{ fontSize: 60, color: '#fff', mb: 2 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-                Medical Chat
+                {content.home.medicalCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Health info & support
+                {content.home.medicalCardDesc}
               </Typography>
             </Box>
           </Grid>
@@ -488,10 +488,10 @@ const HomePage = () => {
             >
               <CalendarTodayIcon sx={{ fontSize: 60, color: '#fff', mb: 2 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-                Events Calendar
+                {content.home.eventsCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Workshops & meetups
+                {content.home.eventsCardDesc}
               </Typography>
             </Box>
           </Grid>
@@ -513,10 +513,10 @@ const HomePage = () => {
             >
               <ForumIcon sx={{ fontSize: 60, color: '#fff', mb: 2 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-                Community Forums
+                {content.home.forumsCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Connect & discuss
+                {content.home.forumsCardDesc}
               </Typography>
             </Box>
           </Grid>
@@ -538,10 +538,10 @@ const HomePage = () => {
             >
               <EmojiEventsIcon sx={{ fontSize: 60, color: '#fff', mb: 2 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-                Success Stories
+                {content.home.storiesCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Inspiring journeys
+                {content.home.storiesCardDesc}
               </Typography>
             </Box>
           </Grid>
@@ -579,13 +579,13 @@ const HomePage = () => {
             >
               <SchoolIcon sx={{ fontSize: 60, color: '#fff', mb: 2, position: 'relative', zIndex: 1 }} />
               <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1, position: 'relative', zIndex: 1 }}>
-                🎓 Career Coach
+                {content.home.coachCardTitle}
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff', position: 'relative', zIndex: 1, fontWeight: 600 }}>
-                Video lessons & tips
+                {content.home.coachCardDesc}
               </Typography>
               <Chip 
-                label="NEW" 
+                label={content.home.coachBadgeNew} 
                 size="small" 
                 sx={{ 
                   mt: 1, 
@@ -660,10 +660,10 @@ const HomePage = () => {
                   </Avatar>
                   <Box>
                     <Typography variant="h3" fontWeight={900} gutterBottom sx={{ textShadow: '3px 3px 6px rgba(0,0,0,0.3)' }}>
-                      Are You an Employer?
+                      {content.home.employerTitle}
                     </Typography>
                     <Typography variant="h6" sx={{ opacity: 0.95, fontWeight: 500 }}>
-                      Post Jobs & Connect with Talented Youth
+                      {content.home.employerSubtitle}
                     </Typography>
                   </Box>
                 </Box>
@@ -672,19 +672,19 @@ const HomePage = () => {
                   <Grid item xs={12} sm={4}>
                     <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
                       <RocketLaunchIcon sx={{ mr: 2, fontSize: 32, color: '#FF8C00' }} />
-                      <Typography variant="body1" fontWeight={600}>Post Unlimited Jobs</Typography>
+                      <Typography variant="body1" fontWeight={600}>{content.home.employerFeature1}</Typography>
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
                       <GroupsIcon sx={{ mr: 2, fontSize: 32, color: '#FF8C00' }} />
-                      <Typography variant="body1" fontWeight={600}>Access 8,500+ Youth</Typography>
+                      <Typography variant="body1" fontWeight={600}>{content.home.employerFeature2}</Typography>
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
                       <TrendingUpIcon sx={{ mr: 2, fontSize: 32, color: '#FF8C00' }} />
-                      <Typography variant="body1" fontWeight={600}>Advanced Analytics</Typography>
+                      <Typography variant="body1" fontWeight={600}>{content.home.employerFeature3}</Typography>
                     </Box>
                   </Grid>
                 </Grid>
@@ -715,10 +715,10 @@ const HomePage = () => {
                   }}
                   startIcon={<BusinessIcon sx={{ fontSize: 28 }} />}
                 >
-                  Join as Stakeholder
+                  {content.home.employerCtaBtn}
                 </Button>
                 <Typography variant="caption" display="block" sx={{ mt: 2, opacity: 0.95, fontWeight: 600 }}>
-                  Free to get started • No credit card required
+                  {content.home.employerCta}
                 </Typography>
               </Grid>
             </Grid>
@@ -841,11 +841,11 @@ const HomePage = () => {
                 WebkitTextFillColor: 'transparent'
               }}
             >
-              How It Works
+              {content.home.howItWorksTitle}
             </Typography>
             <Box className="section-divider" sx={{ background: 'linear-gradient(90deg, #0047AB 0%, #FF8C00 100%)' }} />
             <Typography variant="h6" color="text.secondary" fontWeight={500}>
-              Get started in 3 simple steps
+              {content.home.howItWorksSubtitle}
             </Typography>
           </Box>
 
@@ -872,10 +872,10 @@ const HomePage = () => {
                     1
                   </Box>
                   <Typography variant="h5" fontWeight={700} gutterBottom color="#0047AB">
-                    Create Your Profile
+                    {content.home.step1Title}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Sign up for free and complete your profile with your skills, education, and career goals.
+                    {content.home.step1Desc}
                   </Typography>
                 </Box>
               </Fade>
@@ -903,10 +903,10 @@ const HomePage = () => {
                     2
                   </Box>
                   <Typography variant="h5" fontWeight={700} gutterBottom color="#FF8C00">
-                    Explore Opportunities
+                    {content.home.step2Title}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Browse thousands of bursaries, jobs, learnerships, and business funding opportunities.
+                    {content.home.step2Desc}
                   </Typography>
                 </Box>
               </Fade>
@@ -934,10 +934,10 @@ const HomePage = () => {
                     3
                   </Box>
                   <Typography variant="h5" fontWeight={700} gutterBottom color="#0047AB">
-                    Apply & Succeed
+                    {content.home.step3Title}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Apply directly through our platform and get support from our community and resources.
+                    {content.home.step3Desc}
                   </Typography>
                 </Box>
               </Fade>
@@ -960,11 +960,11 @@ const HomePage = () => {
                 WebkitTextFillColor: 'transparent'
               }}
             >
-              Success Stories
+              {content.home.successStoriesTitle}
             </Typography>
             <Box className="section-divider" sx={{ background: 'linear-gradient(90deg, #0047AB 0%, #FF8C00 100%)' }} />
             <Typography variant="h6" color="text.secondary" fontWeight={500}>
-              Hear from youth who found their path
+              {content.home.successStoriesSubtitle}
             </Typography>
           </Box>
 
@@ -995,13 +995,13 @@ const HomePage = () => {
                       ))}
                     </Box>
                     <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', mb: 3 }}>
-                      "Thanks to ELIDZ-STP Youth Portal, I found a bursary that covered my entire engineering degree. Now I'm working at a top company!"
+                      {content.home.testimonial1}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Avatar sx={{ bgcolor: '#0047AB', mr: 2 }}>TM</Avatar>
                       <Box>
-                        <Typography variant="subtitle2" fontWeight={700}>Thando Mkhize</Typography>
-                        <Typography variant="caption" color="text.secondary">Mechanical Engineer</Typography>
+                        <Typography variant="subtitle2" fontWeight={700}>{content.home.testimonial1Name}</Typography>
+                        <Typography variant="caption" color="text.secondary">{content.home.testimonial1Title}</Typography>
                       </Box>
                     </Box>
                   </CardContent>
@@ -1035,13 +1035,13 @@ const HomePage = () => {
                       ))}
                     </Box>
                     <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', mb: 3 }}>
-                      "I got my first job through this portal! The application process was easy and the support was amazing."
+                      {content.home.testimonial2}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Avatar sx={{ bgcolor: '#FF8C00', mr: 2 }}>SN</Avatar>
                       <Box>
-                        <Typography variant="subtitle2" fontWeight={700}>Sipho Ndlovu</Typography>
-                        <Typography variant="caption" color="text.secondary">IT Developer</Typography>
+                        <Typography variant="subtitle2" fontWeight={700}>{content.home.testimonial2Name}</Typography>
+                        <Typography variant="caption" color="text.secondary">{content.home.testimonial2Title}</Typography>
                       </Box>
                     </Box>
                   </CardContent>
@@ -1075,13 +1075,13 @@ const HomePage = () => {
                       ))}
                     </Box>
                     <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', mb: 3 }}>
-                      "The NYDA business grant I found here helped me start my own business. Forever grateful!"
+                      {content.home.testimonial3}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Avatar sx={{ bgcolor: '#0047AB', mr: 2 }}>LM</Avatar>
                       <Box>
-                        <Typography variant="subtitle2" fontWeight={700}>Luyanda Majola</Typography>
-                        <Typography variant="caption" color="text.secondary">Business Owner</Typography>
+                        <Typography variant="subtitle2" fontWeight={700}>{content.home.testimonial3Name}</Typography>
+                        <Typography variant="caption" color="text.secondary">{content.home.testimonial3Title}</Typography>
                       </Box>
                     </Box>
                   </CardContent>
@@ -1105,11 +1105,11 @@ const HomePage = () => {
               WebkitTextFillColor: 'transparent'
             }}
           >
-            Our Vibrant Youth Community
+            {content.home.communityTitle}
           </Typography>
           <Box className="section-divider" sx={{ background: 'linear-gradient(90deg, #0047AB 0%, #FF8C00 100%)' }} />
           <Typography variant="h6" color="text.secondary" fontWeight={500}>
-            Join thousands of ambitious youth across Eastern Cape
+            {content.home.communitySubtitle}
           </Typography>
         </Box>
 
@@ -1131,7 +1131,7 @@ const HomePage = () => {
               >
                 <img 
                   src="/youngguys.png" 
-                  alt="Eastern Cape Youth Community"
+                  alt={content.home.communityImage1Alt}
                   style={{
                     width: '100%',
                     height: 'auto',
@@ -1150,10 +1150,10 @@ const HomePage = () => {
                   }}
                 >
                   <Typography variant="h6" fontWeight={700}>
-                    Connect & Collaborate
+                    {content.home.communityFeature1}
                   </Typography>
                   <Typography variant="body2">
-                    Network with peers and mentors
+                    {content.home.communityFeature1Desc}
                   </Typography>
                 </Box>
               </Box>
@@ -1177,7 +1177,7 @@ const HomePage = () => {
               >
                 <img 
                   src="/youth.jpeg" 
-                  alt="Youth Success Together"
+                  alt={content.home.communityImage2Alt}
                   style={{
                     width: '100%',
                     height: 'auto',
@@ -1196,10 +1196,10 @@ const HomePage = () => {
                   }}
                 >
                   <Typography variant="h6" fontWeight={700}>
-                    Celebrate Success
+                    {content.home.communityFeature2}
                   </Typography>
                   <Typography variant="body2">
-                    Share your journey and inspire others
+                    {content.home.communityFeature2Desc}
                   </Typography>
                 </Box>
               </Box>
@@ -1223,7 +1223,7 @@ const HomePage = () => {
               >
                 <img 
                   src="/succesfulwomen.png" 
-                  alt="Empowered Youth"
+                  alt={content.home.communityImage3Alt}
                   style={{
                     width: '100%',
                     height: 'auto',
@@ -1242,10 +1242,10 @@ const HomePage = () => {
                   }}
                 >
                   <Typography variant="h6" fontWeight={700}>
-                    Grow Together
+                    {content.home.communityFeature3}
                   </Typography>
                   <Typography variant="body2">
-                    Access opportunities and resources
+                    {content.home.communityFeature3Desc}
                   </Typography>
                 </Box>
               </Box>
@@ -1255,10 +1255,10 @@ const HomePage = () => {
 
         <Box textAlign="center" mt={6}>
           <Typography variant="h5" fontWeight={700} color="#0047AB" gutterBottom>
-            🎉 8,500+ Youth Already Connected
+            {content.home.communityStats}
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            Be part of Eastern Cape's largest youth empowerment platform
+            {content.home.communityStatsDesc}
           </Typography>
           <Button
             component={Link}
@@ -1283,7 +1283,7 @@ const HomePage = () => {
             }}
             startIcon={<GroupsIcon />}
           >
-            Join The Community
+            {content.home.getStartedBtn}
           </Button>
         </Box>
       </Container>

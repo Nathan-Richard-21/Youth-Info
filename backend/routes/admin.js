@@ -5,6 +5,12 @@ const User = require('../models/User');
 const Opportunity = require('../models/Opportunity');
 const Application = require('../models/Application');
 const Report = require('../models/Report');
+const OpenAI = require('openai');
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // ============ DASHBOARD STATS ============
 router.get('/stats', auth, isAdmin, async (req, res) => {
@@ -399,6 +405,240 @@ router.post('/opportunities/:id/reject', auth, isAdmin, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// AI Fraud Detection
+router.post('/opportunities/:id/fraud-check', auth, isAdmin, async (req, res) => {
+  try {
+    const opportunity = await Opportunity.findById(req.params.id)
+      .populate('createdBy', 'name email');
+    
+    if (!opportunity) return res.status(404).json({ message: 'Opportunity not found' });
+    
+    console.log(`🔍 Fraud check requested for: ${opportunity.title} (by ${req.user.email})`);
+    
+    // Check if OpenAI is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.log('⚠️ OpenAI API key not configured, using rule-based detection');
+      
+      // Fallback: Rule-based fraud detection
+      const fraudIndicators = analyzeFraudIndicators(opportunity);
+      
+      return res.json({
+        riskLevel: fraudIndicators.riskLevel,
+        riskScore: fraudIndicators.score,
+        flags: fraudIndicators.flags,
+        analysis: fraudIndicators.summary,
+        recommendations: fraudIndicators.recommendations,
+        usedAI: false
+      });
+    }
+    
+    try {
+      // Use AI for advanced fraud detection
+      const prompt = `Analyze this job/opportunity posting for potential fraud or scam indicators. Provide a detailed analysis.
+
+Title: ${opportunity.title}
+Organization: ${opportunity.organization}
+Category: ${opportunity.category}
+Description: ${opportunity.description}
+Requirements: ${opportunity.requirements || 'N/A'}
+Application Method: ${opportunity.applicationMethod}
+${opportunity.applicationLink ? `Application Link: ${opportunity.applicationLink}` : ''}
+${opportunity.contactEmail ? `Contact Email: ${opportunity.contactEmail}` : ''}
+${opportunity.contactPhone ? `Contact Phone: ${opportunity.contactPhone}` : ''}
+Location: ${opportunity.location || 'N/A'}
+Deadline: ${opportunity.deadline || 'N/A'}
+
+Analyze for:
+1. Unrealistic promises (too good to be true)
+2. Request for upfront payments or fees
+3. Poor grammar, spelling errors
+4. Vague or unprofessional descriptions
+5. Suspicious contact information
+6. Missing or fake organization details
+7. Urgent/pressure tactics
+8. Lack of legitimate application process
+9. Red flags in requirements or qualifications
+
+Provide:
+- Risk Level: LOW, MEDIUM, or HIGH
+- Risk Score: 0-100 (0=legitimate, 100=definite scam)
+- Specific Flags: List any concerning elements found
+- Analysis: Brief explanation of findings
+- Recommendations: What admin should verify or investigate
+
+Format your response as JSON:
+{
+  "riskLevel": "LOW/MEDIUM/HIGH",
+  "riskScore": 0-100,
+  "flags": ["flag1", "flag2", ...],
+  "analysis": "detailed analysis text",
+  "recommendations": ["recommendation1", "recommendation2", ...]
+}`;
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert fraud detection analyst specializing in identifying job scams, fake opportunities, and fraudulent postings. Analyze opportunities for South African youth and provide detailed, actionable fraud risk assessments.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 800,
+        temperature: 0.3, // Lower temperature for more consistent, factual analysis
+      });
+
+      const aiResponse = completion.choices[0].message.content;
+      console.log('✅ AI fraud analysis completed');
+      
+      // Try to parse JSON response
+      let fraudAnalysis;
+      try {
+        // Extract JSON from response (in case AI adds extra text)
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          fraudAnalysis = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No JSON found in response');
+        }
+      } catch (parseError) {
+        console.log('⚠️ Failed to parse AI response as JSON, using text response');
+        // Fallback: Use rule-based detection
+        const fraudIndicators = analyzeFraudIndicators(opportunity);
+        fraudAnalysis = {
+          riskLevel: fraudIndicators.riskLevel,
+          riskScore: fraudIndicators.score,
+          flags: fraudIndicators.flags,
+          analysis: aiResponse, // Use AI text even if not JSON
+          recommendations: fraudIndicators.recommendations
+        };
+      }
+      
+      res.json({
+        ...fraudAnalysis,
+        usedAI: true,
+        model: 'gpt-4'
+      });
+      
+    } catch (aiError) {
+      console.error('❌ AI fraud detection error:', aiError.message);
+      
+      // Fallback to rule-based detection
+      const fraudIndicators = analyzeFraudIndicators(opportunity);
+      
+      res.json({
+        riskLevel: fraudIndicators.riskLevel,
+        riskScore: fraudIndicators.score,
+        flags: fraudIndicators.flags,
+        analysis: fraudIndicators.summary,
+        recommendations: fraudIndicators.recommendations,
+        usedAI: false,
+        error: 'AI analysis unavailable, using rule-based detection'
+      });
+    }
+    
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Rule-based fraud detection (fallback)
+function analyzeFraudIndicators(opportunity) {
+  const flags = [];
+  let score = 0;
+  
+  // Check for common scam keywords
+  const scamKeywords = [
+    'easy money', 'work from home', 'no experience needed', 'guaranteed income',
+    'make money fast', 'limited time', 'act now', 'urgent', 'western union',
+    'money transfer', 'processing fee', 'registration fee', 'application fee',
+    'training fee', 'deposit required', 'pay upfront', 'bitcoin', 'cryptocurrency'
+  ];
+  
+  const textToCheck = `${opportunity.title} ${opportunity.description} ${opportunity.requirements || ''}`.toLowerCase();
+  
+  scamKeywords.forEach(keyword => {
+    if (textToCheck.includes(keyword)) {
+      flags.push(`Suspicious keyword detected: "${keyword}"`);
+      score += 15;
+    }
+  });
+  
+  // Check for missing critical information
+  if (!opportunity.organization || opportunity.organization.length < 3) {
+    flags.push('Missing or incomplete organization name');
+    score += 20;
+  }
+  
+  if (!opportunity.contactEmail && !opportunity.contactPhone && !opportunity.applicationLink) {
+    flags.push('No valid contact information provided');
+    score += 25;
+  }
+  
+  // Check for suspicious email domains
+  if (opportunity.contactEmail) {
+    const suspiciousDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
+    const emailDomain = opportunity.contactEmail.split('@')[1]?.toLowerCase();
+    if (suspiciousDomains.includes(emailDomain)) {
+      flags.push('Using personal email instead of company domain');
+      score += 10;
+    }
+  }
+  
+  // Check description quality
+  if (opportunity.description && opportunity.description.length < 100) {
+    flags.push('Very short or vague description');
+    score += 10;
+  }
+  
+  // Check for ALL CAPS (common in scams)
+  if (opportunity.title === opportunity.title.toUpperCase() && opportunity.title.length > 10) {
+    flags.push('Title in ALL CAPS (aggressive marketing)');
+    score += 5;
+  }
+  
+  // Check for unrealistic salary/benefits promises
+  const unrealisticPhrases = ['high salary', 'earn thousands', 'luxury', 'millionaire', 'get rich'];
+  unrealisticPhrases.forEach(phrase => {
+    if (textToCheck.includes(phrase)) {
+      flags.push(`Unrealistic promise detected: "${phrase}"`);
+      score += 15;
+    }
+  });
+  
+  // Determine risk level
+  let riskLevel = 'LOW';
+  if (score >= 50) riskLevel = 'HIGH';
+  else if (score >= 25) riskLevel = 'MEDIUM';
+  
+  // Generate recommendations
+  const recommendations = [];
+  if (score > 0) {
+    recommendations.push('Verify organization legitimacy through official channels');
+    recommendations.push('Check if organization has official website and social media presence');
+    recommendations.push('Contact organization directly using publicly listed contact information');
+  }
+  if (flags.some(f => f.includes('fee') || f.includes('payment'))) {
+    recommendations.push('⚠️ WARNING: Legitimate opportunities never require upfront payment');
+  }
+  if (flags.some(f => f.includes('email'))) {
+    recommendations.push('Verify the contact email matches the organization\'s official domain');
+  }
+  
+  return {
+    riskLevel,
+    score: Math.min(score, 100),
+    flags: flags.length > 0 ? flags : ['No obvious red flags detected'],
+    summary: flags.length > 0 
+      ? `Found ${flags.length} potential concern(s). Manual verification recommended.`
+      : 'No obvious fraud indicators detected. Appears legitimate but always verify independently.',
+    recommendations: recommendations.length > 0 ? recommendations : ['Standard verification: Check organization background and credentials']
+  };
+}
 
 router.delete('/opportunities/:id', auth, isAdmin, async (req, res) => {
   try {

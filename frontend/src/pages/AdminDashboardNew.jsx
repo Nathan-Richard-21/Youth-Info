@@ -3,11 +3,11 @@ import {
   Box, Container, Typography, Grid, Card, CardContent, Button, Tabs, Tab,
   Table, TableBody, TableCell, TableHead, TableRow, Paper, Chip, Alert,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton,
-  CircularProgress, MenuItem, Select, FormControl, InputLabel
+  CircularProgress, MenuItem, Select, FormControl, InputLabel, List, ListItem, ListItemText, Divider
 } from '@mui/material'
 import { 
   Dashboard as DashboardIcon, People, WorkOutline, ReportProblem,
-  CheckCircle, Cancel, Visibility, Edit, Delete, Block, Check
+  CheckCircle, Cancel, Visibility, Edit, Delete, Block, Check, Security, Warning, VerifiedUser
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
@@ -26,6 +26,10 @@ const AdminDashboard = () => {
   const [showRejectDialog, setShowRejectDialog] = useState(false)
   const [showViewDialog, setShowViewDialog] = useState(false)
   const [viewingOpp, setViewingOpp] = useState(null)
+  const [fraudCheckLoading, setFraudCheckLoading] = useState(null)
+  const [fraudResults, setFraudResults] = useState({})
+  const [showFraudDialog, setShowFraudDialog] = useState(false)
+  const [currentFraudAnalysis, setCurrentFraudAnalysis] = useState(null)
   
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
@@ -122,6 +126,38 @@ const AdminDashboard = () => {
   const handleViewOpportunity = (opp) => {
     setViewingOpp(opp)
     setShowViewDialog(true)
+  }
+
+  const handleFraudCheck = async (oppId) => {
+    try {
+      setFraudCheckLoading(oppId)
+      const response = await api.post(`/admin/opportunities/${oppId}/fraud-check`)
+      setFraudResults(prev => ({ ...prev, [oppId]: response.data }))
+      setCurrentFraudAnalysis(response.data)
+      setShowFraudDialog(true)
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to perform fraud check')
+    } finally {
+      setFraudCheckLoading(null)
+    }
+  }
+
+  const getRiskColor = (riskLevel) => {
+    switch(riskLevel) {
+      case 'LOW': return 'success'
+      case 'MEDIUM': return 'warning'
+      case 'HIGH': return 'error'
+      default: return 'default'
+    }
+  }
+
+  const getRiskIcon = (riskLevel) => {
+    switch(riskLevel) {
+      case 'LOW': return <VerifiedUser />
+      case 'MEDIUM': return <Warning />
+      case 'HIGH': return <ReportProblem />
+      default: return <Security />
+    }
   }
 
   if (loading) {
@@ -324,6 +360,7 @@ const AdminDashboard = () => {
                     <TableCell>Organization</TableCell>
                     <TableCell>Created By</TableCell>
                     <TableCell>Date</TableCell>
+                    <TableCell>Fraud Check</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -336,13 +373,39 @@ const AdminDashboard = () => {
                       <TableCell>{opp.createdBy?.name || 'Unknown'}</TableCell>
                       <TableCell>{new Date(opp.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        <IconButton color="success" size="small" onClick={() => handleApprove(opp._id)}>
+                        {fraudResults[opp._id] ? (
+                          <Chip 
+                            icon={getRiskIcon(fraudResults[opp._id].riskLevel)}
+                            label={`${fraudResults[opp._id].riskLevel} RISK`}
+                            color={getRiskColor(fraudResults[opp._id].riskLevel)}
+                            size="small"
+                            onClick={() => {
+                              setCurrentFraudAnalysis(fraudResults[opp._id])
+                              setShowFraudDialog(true)
+                            }}
+                            sx={{ cursor: 'pointer' }}
+                          />
+                        ) : (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={fraudCheckLoading === opp._id ? <CircularProgress size={16} /> : <Security />}
+                            onClick={() => handleFraudCheck(opp._id)}
+                            disabled={fraudCheckLoading === opp._id}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            {fraudCheckLoading === opp._id ? 'Checking...' : 'Verify'}
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <IconButton color="success" size="small" onClick={() => handleApprove(opp._id)} title="Approve">
                           <CheckCircle />
                         </IconButton>
-                        <IconButton color="error" size="small" onClick={() => { setSelectedOpp(opp._id); setShowRejectDialog(true); }}>
+                        <IconButton color="error" size="small" onClick={() => { setSelectedOpp(opp._id); setShowRejectDialog(true); }} title="Reject">
                           <Cancel />
                         </IconButton>
-                        <IconButton size="small" onClick={() => handleViewOpportunity(opp)}>
+                        <IconButton size="small" onClick={() => handleViewOpportunity(opp)} title="View Details">
                           <Visibility />
                         </IconButton>
                       </TableCell>
@@ -402,7 +465,12 @@ const AdminDashboard = () => {
 
         {activeTab === 2 && (
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>All Opportunities</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6">All Opportunities</Typography>
+              <Alert severity="info" sx={{ py: 0 }}>
+                💡 Use the <strong>Fraud Check</strong> to verify any suspicious postings
+              </Alert>
+            </Box>
             <Table>
               <TableHead>
                 <TableRow>
@@ -412,6 +480,7 @@ const AdminDashboard = () => {
                   <TableCell>Views</TableCell>
                   <TableCell>Applications</TableCell>
                   <TableCell>Date</TableCell>
+                  <TableCell>Fraud Check</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -431,10 +500,36 @@ const AdminDashboard = () => {
                     <TableCell>{opp.applications || 0}</TableCell>
                     <TableCell>{new Date(opp.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <IconButton size="small" onClick={() => handleViewOpportunity(opp)}>
+                      {fraudResults[opp._id] ? (
+                        <Chip 
+                          icon={getRiskIcon(fraudResults[opp._id].riskLevel)}
+                          label={`${fraudResults[opp._id].riskLevel} RISK`}
+                          color={getRiskColor(fraudResults[opp._id].riskLevel)}
+                          size="small"
+                          onClick={() => {
+                            setCurrentFraudAnalysis(fraudResults[opp._id])
+                            setShowFraudDialog(true)
+                          }}
+                          sx={{ cursor: 'pointer' }}
+                        />
+                      ) : (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={fraudCheckLoading === opp._id ? <CircularProgress size={16} /> : <Security />}
+                          onClick={() => handleFraudCheck(opp._id)}
+                          disabled={fraudCheckLoading === opp._id}
+                          sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                        >
+                          {fraudCheckLoading === opp._id ? 'Checking...' : 'Verify'}
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton size="small" onClick={() => handleViewOpportunity(opp)} title="View Details">
                         <Visibility />
                       </IconButton>
-                      <IconButton size="small" onClick={() => navigate(`/admin/post?edit=${opp._id}`)}>
+                      <IconButton size="small" onClick={() => navigate(`/admin/post?edit=${opp._id}`)} title="Edit">
                         <Edit />
                       </IconButton>
                       <IconButton size="small" color="error" onClick={() => handleDeleteOpportunity(opp._id)}>
@@ -712,6 +807,157 @@ const AdminDashboard = () => {
               </>
             )}
             <Button onClick={() => setShowViewDialog(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Fraud Analysis Dialog */}
+        <Dialog 
+          open={showFraudDialog} 
+          onClose={() => setShowFraudDialog(false)} 
+          maxWidth="md" 
+          fullWidth
+        >
+          <DialogTitle sx={{ 
+            bgcolor: currentFraudAnalysis?.riskLevel === 'HIGH' ? '#fee2e2' : 
+                     currentFraudAnalysis?.riskLevel === 'MEDIUM' ? '#fef3c7' : '#dcfce7',
+            color: currentFraudAnalysis?.riskLevel === 'HIGH' ? '#991b1b' : 
+                   currentFraudAnalysis?.riskLevel === 'MEDIUM' ? '#92400e' : '#14532d'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {currentFraudAnalysis && getRiskIcon(currentFraudAnalysis.riskLevel)}
+              <Typography variant="h6" fontWeight={700}>
+                AI Fraud Detection Analysis
+              </Typography>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            {currentFraudAnalysis && (
+              <Box sx={{ py: 2 }}>
+                {/* Risk Level Badge */}
+                <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <Chip 
+                    icon={getRiskIcon(currentFraudAnalysis.riskLevel)}
+                    label={`${currentFraudAnalysis.riskLevel} RISK`}
+                    color={getRiskColor(currentFraudAnalysis.riskLevel)}
+                    size="large"
+                    sx={{ fontSize: '1rem', fontWeight: 700, px: 2, py: 3 }}
+                  />
+                  <Box>
+                    <Typography variant="h4" fontWeight={700} color="text.primary">
+                      {currentFraudAnalysis.riskScore}/100
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Risk Score
+                    </Typography>
+                  </Box>
+                  {currentFraudAnalysis.usedAI && (
+                    <Chip 
+                      label={`AI: ${currentFraudAnalysis.model || 'GPT-4'}`} 
+                      size="small" 
+                      color="primary" 
+                      variant="outlined"
+                    />
+                  )}
+                </Box>
+
+                {/* Analysis */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#0047AB' }}>
+                    📊 Analysis
+                  </Typography>
+                  <Paper sx={{ p: 2, bgcolor: '#f8fafc' }}>
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                      {currentFraudAnalysis.analysis}
+                    </Typography>
+                  </Paper>
+                </Box>
+
+                {/* Flags Detected */}
+                {currentFraudAnalysis.flags && currentFraudAnalysis.flags.length > 0 && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#FF8C00' }}>
+                      🚩 Flags Detected ({currentFraudAnalysis.flags.length})
+                    </Typography>
+                    <List sx={{ bgcolor: '#fff', border: '1px solid #e5e7eb', borderRadius: 1 }}>
+                      {currentFraudAnalysis.flags.map((flag, index) => (
+                        <React.Fragment key={index}>
+                          <ListItem>
+                            <ListItemText 
+                              primary={flag}
+                              primaryTypographyProps={{ 
+                                variant: 'body2',
+                                color: currentFraudAnalysis.riskLevel === 'HIGH' ? 'error' : 'text.primary'
+                              }}
+                            />
+                          </ListItem>
+                          {index < currentFraudAnalysis.flags.length - 1 && <Divider />}
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+
+                {/* Recommendations */}
+                {currentFraudAnalysis.recommendations && currentFraudAnalysis.recommendations.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#10b981' }}>
+                      ✅ Recommendations
+                    </Typography>
+                    <List sx={{ bgcolor: '#f0fdf4', border: '1px solid #86efac', borderRadius: 1 }}>
+                      {currentFraudAnalysis.recommendations.map((rec, index) => (
+                        <React.Fragment key={index}>
+                          <ListItem>
+                            <ListItemText 
+                              primary={rec}
+                              primaryTypographyProps={{ variant: 'body2' }}
+                            />
+                          </ListItem>
+                          {index < currentFraudAnalysis.recommendations.length - 1 && <Divider />}
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+
+                {/* Warning for High Risk */}
+                {currentFraudAnalysis.riskLevel === 'HIGH' && (
+                  <Alert severity="error" sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600}>
+                      ⚠️ HIGH RISK DETECTED - Immediate Action Recommended
+                    </Typography>
+                    <Typography variant="body2">
+                      This opportunity shows multiple fraud indicators. Consider rejecting or requesting additional verification from the poster.
+                    </Typography>
+                  </Alert>
+                )}
+
+                {currentFraudAnalysis.error && (
+                  <Alert severity="warning" sx={{ mt: 2 }}>
+                    <Typography variant="body2">
+                      {currentFraudAnalysis.error}
+                    </Typography>
+                  </Alert>
+                )}
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowFraudDialog(false)}>Close</Button>
+            {currentFraudAnalysis?.riskLevel === 'HIGH' && (
+              <Button 
+                variant="contained" 
+                color="error" 
+                onClick={() => {
+                  setShowFraudDialog(false)
+                  // Auto-populate reject dialog with fraud concerns
+                  const fraudReason = `FRAUD RISK DETECTED (AI Score: ${currentFraudAnalysis.riskScore}/100)\n\nFlags: ${currentFraudAnalysis.flags.join(', ')}\n\nThis posting has been flagged by our AI fraud detection system.`
+                  setRejectReason(fraudReason)
+                  setShowRejectDialog(true)
+                }}
+              >
+                Reject as Fraud
+              </Button>
+            )}
           </DialogActions>
         </Dialog>
       </Container>
