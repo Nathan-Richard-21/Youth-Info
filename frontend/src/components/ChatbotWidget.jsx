@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { generateSmartResponse, conversationState } from '../constants/smartChatbot';
+import { generateContextualResponse, generateGreeting, getPageHelp } from '../constants/contextualChatbot';
 import './ChatbotWidget.css';
 
 const ChatbotWidget = () => {
@@ -9,9 +9,23 @@ const ChatbotWidget = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [user, setUser] = useState(null); // User data
   const messagesEndRef = useRef(null);
   const location = useLocation();
   const { language } = useLanguage();
+
+  // Get user data from localStorage
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    if (token && userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (err) {
+        console.log('Could not parse user data');
+      }
+    }
+  }, []);
 
   // Scroll to bottom when messages change
   const scrollToBottom = () => {
@@ -25,17 +39,17 @@ const ChatbotWidget = () => {
   // Initialize with welcome message
   useEffect(() => {
     if (messages.length === 0) {
-      const welcomeMessage = language === 'xh'
-        ? `Molo! 👋 Wamkelekile kwiYouth Portal.\n\nNdingakunceda njani namhlanje? Ungandibuza:\n🎓 Iikosi kunye noqeqesho\n🚀 Ukuqalisa ishishini\n💰 Inkxaso-mali (NSFAS)\n💼 Imisebenzi\n🏥 Impilo\n📄 I-CV uncedo`
-        : `Hello! 👋 Welcome to the Youth Portal.\n\nHow can I help you today? You can ask me about:\n🎓 Courses and training\n🚀 Starting a business\n💰 Funding (NSFAS, bursaries)\n💼 Jobs and careers\n🏥 Health and wellbeing\n📄 CV and application help\n\nJust ask me anything!`;
+      const welcomeMessage = generateGreeting(user, language);
+      const currentPage = location.pathname.replace('/', '') || 'home';
+      const pageHelp = getPageHelp(currentPage, language);
       
       setMessages([{
         type: 'bot',
-        text: welcomeMessage,
+        text: `${welcomeMessage}\n\n${pageHelp}`,
         timestamp: new Date()
       }]);
     }
-  }, [language]); // Update welcome message when language changes
+  }, [language, location.pathname]); // Update when language or page changes
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -55,24 +69,19 @@ const ChatbotWidget = () => {
     setIsTyping(true);
 
     // Simulate thinking time
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 600));
 
     // Get current page from location
     const currentPage = location.pathname.replace('/', '') || 'home';
     
-    // Get smart bot response with page context
-    const result = generateSmartResponse(userInput, currentPage);
-    
-    // Add conversation to history
-    conversationState.addToHistory(userInput, result.response);
+    // Get contextual response
+    const result = generateContextualResponse(userInput, currentPage, user, language);
     
     const botMessage = {
       type: 'bot',
       text: result.response,
       timestamp: new Date(),
-      flow: result.flow,
-      step: result.step,
-      isPageInfo: result.isPageInfo // Flag if it's page-specific info
+      responseType: result.type
     };
 
     setIsTyping(false);
@@ -94,38 +103,42 @@ const ChatbotWidget = () => {
     
     const pageSpecific = {
       home: {
-        en: ['Help me get started', 'What opportunities are available?', 'How do I create a CV?', 'Tell me about bursaries'],
-        xh: ['Ndincede ndiqalise', 'Ngamathuba aphi akhoyo?', 'Ndenza njani i-CV?', 'Ndithethe ngeebursaries']
+        en: ['What can I do here?', 'How do I get started?', 'Where are the bursaries?', 'Find me a job'],
+        xh: ['Ndingenza ntoni apha?', 'Ndiqala njani?', 'Ziphi iibhasari?', 'Ndifunele umsebenzi']
       },
       bursaries: {
-        en: ['How do I apply?', 'What documents do I need?', 'Who qualifies for bursaries?', 'Tell me about NSFAS'],
-        xh: ['Ndifaka njani isicelo?', 'Ndifuna maxwebhu aphi?', 'Ngubani ofaneleka?', 'Ndithethe nge-NSFAS']
+        en: ['How do I apply?', 'What documents do I need?', 'Help with this page', 'What is NSFAS?'],
+        xh: ['Ndifaka njani isicelo?', 'Ndifuna maxwebhu aphi?', 'Nceda ngeli phepha', 'Yintoni i-NSFAS?']
       },
       learnerships: {
-        en: ['What are learnerships?', 'How do I apply?', 'What fields are available?', 'Do I get paid?'],
-        xh: ['Zintoni iilearnerships?', 'Ndifaka njani isicelo?', 'Ngamacandelo aphi akhoyo?', 'Ndiyahlawulwa?']
+        en: ['What is a learnership?', 'How do I apply?', 'Do I get paid?', 'What fields are available?'],
+        xh: ['Yintoni ilearnership?', 'Ndifaka njani isicelo?', 'Ndiyahlawulwa?', 'Ngamacandelo aphi?']
       },
       careers: {
-        en: ['How do I find a job?', 'Interview tips please', 'What about my first job?', 'How to apply'],
-        xh: ['Ndiwufumana njani umsebenzi?', 'Iingcebiso zodliwano-ndlebe', 'Ngomsebenzi wam wokuqala?', 'Ndifaka njani isicelo']
-      },
-      'resume-builder': {
-        en: ['What goes in a CV?', 'CV writing tips', 'What if I have no experience?', 'How long should it be?'],
-        xh: ['Ndifaka ntoni kwi-CV?', 'Iingcebiso zokubhala i-CV', 'Ukuba andinayo intoni?', 'Ithatha ixesha elingakanani?']
-      },
-      opportunities: {
-        en: ['How do I apply?', 'What types of jobs?', 'Help me search', 'Application tips'],
-        xh: ['Ndifaka njani isicelo?', 'Zintoni iintlobo zemisebenzi?', 'Ndincede ndikhangele', 'Iingcebiso zesicelo']
+        en: ['How do I find a job?', 'CV tips please', 'Help with this page', 'Interview advice'],
+        xh: ['Ndiwufumana njani umsebenzi?', 'Iingcebiso ze-CV', 'Nceda ngeli phepha', 'Iingcebiso zodliwano-ndlebe']
       },
       'business-funding': {
-        en: ['How do I get funding?', 'What do I need?', 'Tell me about grants', 'Business plan help'],
-        xh: ['Ndiyifumana njani inkxaso-mali?', 'Ndifuna ntoni?', 'Ndithethe ngezibonelelo', 'Uncedo ngesicwangciso']
+        en: ['How do I get funding?', 'What is NYDA?', 'Help with this page', 'Start a business'],
+        xh: ['Ndiyifumana njani inkxaso?', 'Yintoni i-NYDA?', 'Nceda ngeli phepha', 'Qalisa ishishini']
+      },
+      'medical-chat': {
+        en: ['What can I ask here?', 'Find a clinic', 'Help with this page', 'Emergency numbers'],
+        xh: ['Ndingazibuza ntoni apha?', 'Fumana ikliniki', 'Nceda ngeli phepha', 'Iinombolo zongxamiseko']
+      },
+      forums: {
+        en: ['How do I post?', 'Join a discussion', 'Help with this page', 'Find mentors'],
+        xh: ['Ndifaka njani isithuba?', 'Joyina ingxoxo', 'Nceda ngeli phepha', 'Fumana abaluleki']
+      },
+      events: {
+        en: ['What events are coming?', 'How do I register?', 'Help with this page', 'Events near me'],
+        xh: ['Yimicimbi ephi ezayo?', 'Ndibhalisa njani?', 'Nceda ngeli phepha', 'Imicimbi kufutshane']
       }
     };
 
     const defaultActions = {
-      en: ['Help with this page', 'Tell me about CVs', 'What bursaries are available?', 'How do I apply?'],
-      xh: ['Nceda ngeli phepha', 'Ndithethe ngee-CV', 'Zikhona iibursary eziphi?', 'Ndifaka njani isicelo?']
+      en: ['Help with this page', 'How to navigate', 'How to apply', 'What is this?'],
+      xh: ['Nceda ngeli phepha', 'Indlela yokuhamba', 'Indlela yokufaka isicelo', 'Yintoni le?']
     };
 
     const lang = language === 'xh' ? 'xh' : 'en';
@@ -133,13 +146,13 @@ const ChatbotWidget = () => {
   };
 
   const clearChat = () => {
-    const welcomeMessage = language === 'xh'
-      ? 'Molo! Ndingakunceda njani namhlanje? Ungandibuza nantoni na malunga neli phepha okanye nayiphi na into enxulumene neYouth Portal.'
-      : 'Hello! How can I help you today? You can ask me anything about this page or the Youth Portal.';
+    const currentPage = location.pathname.replace('/', '') || 'home';
+    const welcomeMessage = generateGreeting(user, language);
+    const pageHelp = getPageHelp(currentPage, language);
     
     setMessages([{
       type: 'bot',
-      text: welcomeMessage,
+      text: `${welcomeMessage}\n\n${pageHelp}`,
       timestamp: new Date()
     }]);
   };

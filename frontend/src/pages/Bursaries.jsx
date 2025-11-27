@@ -10,6 +10,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import api from '../api'
 import { formatDate, isExpiringSoon } from '../utils/dateUtils'
 import QuickApplyDialog from '../components/QuickApplyDialog'
+import OpportunityModal from '../components/OpportunityModal'
 
 const Bursaries = () => {
   const [search, setSearch] = useState('')
@@ -21,6 +22,8 @@ const Bursaries = () => {
   const [savedBursaries, setSavedBursaries] = useState(new Set())
   const [showApplyDialog, setShowApplyDialog] = useState(false)
   const [selectedBursary, setSelectedBursary] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null)
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const token = localStorage.getItem('token')
 
@@ -184,7 +187,23 @@ const Bursaries = () => {
               <Grid container spacing={3}>
                 {bursaries.map((b) => (
                   <Grid item xs={12} md={6} key={b._id}>
-                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', '&:hover': { boxShadow: 6 } }}>
+                    <Card 
+                      sx={{ 
+                        height: '100%', 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        '&:hover': { 
+                          boxShadow: 6,
+                          transform: 'translateY(-4px)'
+                        } 
+                      }}
+                      onClick={() => {
+                        setSelectedOpportunity(b);
+                        setShowModal(true);
+                      }}
+                    >
                       {b.imageUrl && (
                         <Box
                           component="img"
@@ -245,14 +264,20 @@ const Bursaries = () => {
                         <Button 
                           variant="contained" 
                           fullWidth 
-                          onClick={() => handleApply(b)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApply(b);
+                          }}
                           endIcon={<OpenInNewIcon />}
                         >
                           Apply Now
                         </Button>
                         <Button 
                           variant="outlined" 
-                          onClick={() => handleSave(b._id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSave(b._id);
+                          }}
                           startIcon={savedBursaries.has(b._id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
                         >
                           {savedBursaries.has(b._id) ? 'Saved' : 'Save'}
@@ -308,6 +333,17 @@ const Bursaries = () => {
         }}
         opportunity={selectedBursary}
         user={user}
+      />
+
+      {/* Opportunity Detail Modal */}
+      <OpportunityModal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setSelectedOpportunity(null);
+        }}
+        opportunity={selectedOpportunity}
+        type="bursary"
       />
     </Box>
   )
