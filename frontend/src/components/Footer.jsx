@@ -291,6 +291,22 @@ const Footer = () => {
             >
               Forums
             </MuiLink>
+            <MuiLink 
+              component={Link} 
+              to="/coach" 
+              sx={{ 
+                color: 'rgba(255,255,255,0.85)', 
+                display: 'block', 
+                mb: 1.5,
+                transition: 'all 0.3s ease',
+                '&:hover': { 
+                  color: '#FF8C00',
+                  transform: 'translateX(5px)'
+                }
+              }}
+            >
+              Career Coach
+            </MuiLink>
           </Grid>
           
           <Grid item xs={6} md={2}>

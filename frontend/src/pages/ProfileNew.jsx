@@ -44,6 +44,16 @@ const Profile = () => {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
 
+  // Password change state
+  const [passwordDialog, setPasswordDialog] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
+
   useEffect(() => {
     loadUserData()
   }, [])
@@ -140,6 +150,61 @@ const Profile = () => {
     } finally {
       setChatLoading(false)
     }
+  }
+
+  const handlePasswordChange = async () => {
+    // Validation
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError('Please fill in all fields')
+      return
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('New passwords do not match')
+      return
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters')
+      return
+    }
+
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      setPasswordError('New password must be different from current password')
+      return
+    }
+
+    setPasswordLoading(true)
+    setPasswordError('')
+
+    try {
+      await api.put('/users/me/password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      })
+      
+      alert('Password changed successfully!')
+      setPasswordDialog(false)
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      })
+    } catch (err) {
+      setPasswordError(err.response?.data?.message || 'Failed to change password. Please check your current password.')
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
+  const handleCancelPasswordChange = () => {
+    setPasswordDialog(false)
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    })
+    setPasswordError('')
   }
 
   const getStatusColor = (status) => {
@@ -575,24 +640,151 @@ const Profile = () => {
         {activeTab === 5 && (
           <Paper elevation={0} sx={{ p: 4, borderRadius: 3 }}>
             <Typography variant="h5" fontWeight={600} gutterBottom>
-              Notification Settings
+              Account Settings
             </Typography>
             <Divider sx={{ my: 3 }} />
             
-            <FormControlLabel
-              control={<Switch checked={preferences.emailNotifications} onChange={(e) => handlePreferenceChange('emailNotifications', e.target.checked)} />}
-              label="Email Notifications"
-            />
-            <FormControlLabel
-              control={<Switch checked={preferences.jobAlerts} onChange={(e) => handlePreferenceChange('jobAlerts', e.target.checked)} />}
-              label="Job Alerts"
-            />
-            <FormControlLabel
-              control={<Switch checked={preferences.bursaryAlerts} onChange={(e) => handlePreferenceChange('bursaryAlerts', e.target.checked)} />}
-              label="Bursary Alerts"
-            />
+            {/* Security Section */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Security /> Security
+              </Typography>
+              <Card variant="outlined" sx={{ mt: 2, p: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      Password
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Change your password to keep your account secure
+                    </Typography>
+                  </Box>
+                  <Button 
+                    variant="outlined" 
+                    startIcon={<Security />}
+                    onClick={() => setPasswordDialog(true)}
+                  >
+                    Change Password
+                  </Button>
+                </Box>
+              </Card>
+            </Box>
+
+            {/* Notification Settings */}
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Notifications /> Notification Preferences
+            </Typography>
+            <Card variant="outlined" sx={{ mt: 2, p: 3 }}>
+              <FormControlLabel
+                control={<Switch checked={preferences.emailNotifications} onChange={(e) => handlePreferenceChange('emailNotifications', e.target.checked)} />}
+                label={
+                  <Box>
+                    <Typography variant="body1" fontWeight={600}>Email Notifications</Typography>
+                    <Typography variant="body2" color="text.secondary">Receive updates via email</Typography>
+                  </Box>
+                }
+                sx={{ mb: 2, display: 'flex', alignItems: 'flex-start' }}
+              />
+              <Divider sx={{ my: 2 }} />
+              <FormControlLabel
+                control={<Switch checked={preferences.jobAlerts} onChange={(e) => handlePreferenceChange('jobAlerts', e.target.checked)} />}
+                label={
+                  <Box>
+                    <Typography variant="body1" fontWeight={600}>Job Alerts</Typography>
+                    <Typography variant="body2" color="text.secondary">Get notified about new job opportunities</Typography>
+                  </Box>
+                }
+                sx={{ mb: 2, display: 'flex', alignItems: 'flex-start' }}
+              />
+              <Divider sx={{ my: 2 }} />
+              <FormControlLabel
+                control={<Switch checked={preferences.bursaryAlerts} onChange={(e) => handlePreferenceChange('bursaryAlerts', e.target.checked)} />}
+                label={
+                  <Box>
+                    <Typography variant="body1" fontWeight={600}>Bursary Alerts</Typography>
+                    <Typography variant="body2" color="text.secondary">Get notified about new bursary opportunities</Typography>
+                  </Box>
+                }
+                sx={{ display: 'flex', alignItems: 'flex-start' }}
+              />
+            </Card>
           </Paper>
         )}
+
+        {/* Password Change Dialog */}
+        <Dialog 
+          open={passwordDialog} 
+          onClose={handleCancelPasswordChange}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Security color="primary" />
+              <Typography variant="h6" fontWeight={700}>
+                Change Password
+              </Typography>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            {passwordError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {passwordError}
+              </Alert>
+            )}
+            <Box sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                type="password"
+                label="Current Password"
+                value={passwordData.currentPassword}
+                onChange={(e) => {
+                  setPasswordData({...passwordData, currentPassword: e.target.value})
+                  setPasswordError('')
+                }}
+                sx={{ mb: 2 }}
+                autoComplete="current-password"
+              />
+              <TextField
+                fullWidth
+                type="password"
+                label="New Password"
+                value={passwordData.newPassword}
+                onChange={(e) => {
+                  setPasswordData({...passwordData, newPassword: e.target.value})
+                  setPasswordError('')
+                }}
+                sx={{ mb: 2 }}
+                helperText="Must be at least 6 characters"
+                autoComplete="new-password"
+              />
+              <TextField
+                fullWidth
+                type="password"
+                label="Confirm New Password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => {
+                  setPasswordData({...passwordData, confirmPassword: e.target.value})
+                  setPasswordError('')
+                }}
+                autoComplete="new-password"
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 0 }}>
+            <Button onClick={handleCancelPasswordChange} disabled={passwordLoading}>
+              Cancel
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={handlePasswordChange}
+              disabled={passwordLoading}
+              startIcon={passwordLoading ? <CircularProgress size={20} /> : <Security />}
+            >
+              {passwordLoading ? 'Changing...' : 'Change Password'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </Box>
   )

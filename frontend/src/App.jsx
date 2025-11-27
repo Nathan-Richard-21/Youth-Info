@@ -31,6 +31,7 @@ import StakeholderSignup from './pages/StakeholderSignup';
 import StakeholderPostJob from './pages/StakeholderPostJob';
 import Opportunities from './pages/Opportunities'
 import TermsAndPrivacy from './pages/TermsAndPrivacy'
+import Coach from './pages/Coach'
 
 const theme = createTheme({
   palette: {
@@ -173,6 +174,7 @@ const App = () => {
               <Route path="/resume-builder" element={<ResumeBuilder />} />
               <Route path="/knowledge-base" element={<KnowledgeBase />} />
               <Route path="/faq" element={<FAQ />} />
+              <Route path="/coach" element={<Coach />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/stakeholder-signup" element={<StakeholderSignup />} />

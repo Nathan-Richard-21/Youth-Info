@@ -75,8 +75,8 @@ const HomePage = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'url("https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80") center/cover',
-            opacity: 0.15,
+            background: 'url("/youngguys.png") center/cover',
+            opacity: 0.2,
             mixBlendMode: 'overlay'
           }
         }}
@@ -201,8 +201,8 @@ const HomePage = () => {
                   }}
                 >
                   <img 
-                    src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80" 
-                    alt="Youth Success"
+                    src="/younggirls.png" 
+                    alt="Eastern Cape Youth Success"
                     style={{
                       width: '100%',
                       borderRadius: '20px',
@@ -541,8 +541,61 @@ const HomePage = () => {
                 Success Stories
               </Typography>
               <Typography variant="body2" sx={{ color: '#fff' }}>
-                Get inspired
+                Inspiring journeys
               </Typography>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Box 
+              component={Link} 
+              to="/coach"
+              sx={{ 
+                display: 'block',
+                textDecoration: 'none',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                p: 4,
+                borderRadius: 2,
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+                '&:hover': { 
+                  transform: 'translateY(-10px)',
+                  boxShadow: '0 8px 32px rgba(102, 126, 234, 0.5)'
+                },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: '-50%',
+                  right: '-50%',
+                  width: '200%',
+                  height: '200%',
+                  background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)',
+                  animation: 'pulse 3s ease-in-out infinite'
+                }
+              }}
+            >
+              <SchoolIcon sx={{ fontSize: 60, color: '#fff', mb: 2, position: 'relative', zIndex: 1 }} />
+              <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 1, position: 'relative', zIndex: 1 }}>
+                🎓 Career Coach
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#fff', position: 'relative', zIndex: 1, fontWeight: 600 }}>
+                Video lessons & tips
+              </Typography>
+              <Chip 
+                label="NEW" 
+                size="small" 
+                sx={{ 
+                  mt: 1, 
+                  bgcolor: '#FF8C00', 
+                  color: 'white', 
+                  fontWeight: 700,
+                  position: 'relative',
+                  zIndex: 1
+                }} 
+              />
             </Box>
           </Grid>
         </Grid>
@@ -1039,6 +1092,202 @@ const HomePage = () => {
         </Container>
       </Box>
 
+      {/* Community Gallery Section - NEW */}
+      <Container maxWidth="lg" sx={{ my: 10 }}>
+        <Box textAlign="center" mb={6}>
+          <Typography 
+            variant="h3" 
+            fontWeight={800} 
+            gutterBottom
+            sx={{
+              background: 'linear-gradient(135deg, #0047AB 0%, #FF8C00 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
+            Our Vibrant Youth Community
+          </Typography>
+          <Box className="section-divider" sx={{ background: 'linear-gradient(90deg, #0047AB 0%, #FF8C00 100%)' }} />
+          <Typography variant="h6" color="text.secondary" fontWeight={500}>
+            Join thousands of ambitious youth across Eastern Cape
+          </Typography>
+        </Box>
+
+        <Grid container spacing={4} alignItems="center">
+          <Grid item xs={12} md={4}>
+            <Zoom in={isVisible} timeout={1600}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  boxShadow: '0 12px 40px rgba(0,71,171,0.2)',
+                  transition: 'transform 0.4s ease, box-shadow 0.4s ease',
+                  '&:hover': {
+                    transform: 'translateY(-12px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,71,171,0.3)'
+                  }
+                }}
+              >
+                <img 
+                  src="/youngguys.png" 
+                  alt="Eastern Cape Youth Community"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block'
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(to top, rgba(0,71,171,0.9) 0%, transparent 100%)',
+                    color: 'white',
+                    p: 3
+                  }}
+                >
+                  <Typography variant="h6" fontWeight={700}>
+                    Connect & Collaborate
+                  </Typography>
+                  <Typography variant="body2">
+                    Network with peers and mentors
+                  </Typography>
+                </Box>
+              </Box>
+            </Zoom>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Zoom in={isVisible} timeout={1800}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  boxShadow: '0 12px 40px rgba(255,140,0,0.2)',
+                  transition: 'transform 0.4s ease, box-shadow 0.4s ease',
+                  '&:hover': {
+                    transform: 'translateY(-12px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(255,140,0,0.3)'
+                  }
+                }}
+              >
+                <img 
+                  src="/youth.jpeg" 
+                  alt="Youth Success Together"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block'
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(to top, rgba(255,140,0,0.9) 0%, transparent 100%)',
+                    color: 'white',
+                    p: 3
+                  }}
+                >
+                  <Typography variant="h6" fontWeight={700}>
+                    Celebrate Success
+                  </Typography>
+                  <Typography variant="body2">
+                    Share your journey and inspire others
+                  </Typography>
+                </Box>
+              </Box>
+            </Zoom>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Zoom in={isVisible} timeout={2000}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  boxShadow: '0 12px 40px rgba(0,71,171,0.2)',
+                  transition: 'transform 0.4s ease, box-shadow 0.4s ease',
+                  '&:hover': {
+                    transform: 'translateY(-12px) scale(1.02)',
+                    boxShadow: '0 20px 60px rgba(0,71,171,0.3)'
+                  }
+                }}
+              >
+                <img 
+                  src="/succesfulwomen.png" 
+                  alt="Empowered Youth"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block'
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(to top, rgba(0,71,171,0.9) 0%, transparent 100%)',
+                    color: 'white',
+                    p: 3
+                  }}
+                >
+                  <Typography variant="h6" fontWeight={700}>
+                    Grow Together
+                  </Typography>
+                  <Typography variant="body2">
+                    Access opportunities and resources
+                  </Typography>
+                </Box>
+              </Box>
+            </Zoom>
+          </Grid>
+        </Grid>
+
+        <Box textAlign="center" mt={6}>
+          <Typography variant="h5" fontWeight={700} color="#0047AB" gutterBottom>
+            🎉 8,500+ Youth Already Connected
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            Be part of Eastern Cape's largest youth empowerment platform
+          </Typography>
+          <Button
+            component={Link}
+            to="/register"
+            variant="contained"
+            size="large"
+            sx={{
+              bgcolor: '#FF8C00',
+              color: 'white',
+              px: 5,
+              py: 2,
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              borderRadius: 3,
+              boxShadow: '0 8px 24px rgba(255,140,0,0.4)',
+              '&:hover': {
+                bgcolor: '#FF6900',
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 32px rgba(255,140,0,0.5)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+            startIcon={<GroupsIcon />}
+          >
+            Join The Community
+          </Button>
+        </Box>
+      </Container>
+
       {/* CTA Section */}
       <Box 
         sx={{ 
@@ -1053,8 +1302,8 @@ const HomePage = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1920&q=80") center/cover',
-            opacity: 0.1,
+            background: 'url("/youthyoung.jpeg") center/cover',
+            opacity: 0.15,
             mixBlendMode: 'overlay'
           }
         }}
